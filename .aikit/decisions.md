@@ -41,3 +41,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
   - *Positive*: Saved isochronic presets reproduce the values the user entered, and the UI no longer exposes controls that do nothing.
   - *Trade-offs*: The user-preset schema now differs by category; older isochronic records remain readable through the fallback.
 - Cross-principle check: PRINCIPLE-016 (ADR), PRINCIPLE-018 (commit and push).
+
+### ADR-003: Main-window keeper via PrintWindow; fullscreen grabs the wrong window
+- **Date**: 2026-11-03
+- **Status**: Accepted
+- **Context**: No registered screenshots existed; the legacy root capture was unrecorded. Fullscreen ImageGrab framed the IDE because the Tk window never takes focus from a headless launcher.
+- **Decision**: Register `2026-11-03-main.png` (`python SourceCode.py`, PrintWindow on `NeuralBeat 1.0.0`, 1125x655, commit `32c408a`) in `.aikit/media.json` and the README `aegean:screenshots` block. The single window is the whole UI, so one keeper is full coverage. No audio was generated (Generate never pressed).
+- **Consequences**: README proves the current app. Reproduce with the launch plus PrintWindow script above.

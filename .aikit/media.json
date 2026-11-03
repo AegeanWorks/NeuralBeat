@@ -41,6 +41,26 @@
       }
     }
   },
-  "screenshots": [],
+  "screenshots": [
+    {
+      "path": "assets/screenshots/2026-11-03-main.png",
+      "alt": "NeuralBeat main window at 2026-11-03",
+      "caption": "Main window from python SourceCode.py: ear frequencies, presets, advanced controls, generate and stop. Captured via PrintWindow while occluded.",
+      "commit": "32c408ac447d5100b6a726d4ab62bdec58188af4",
+      "taken_at": "2026-11-03",
+      "viewport": "1125x655",
+      "width": 1125,
+      "height": 655,
+      "status": "approved",
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:kilo",
+        "method": "vision",
+        "notes": "Real PrintWindow capture of the live Tk app: all panels, 432 Hz defaults, preset banks and Generate/Stop all legible; matches the legacy shot layout at HEAD.",
+        "score": 93,
+        "reviewed_at": "2026-11-03"
+      }
+    }
+  ],
   "model": "community/scriptsnsenses-sys/flux-2-dev-free"
 }

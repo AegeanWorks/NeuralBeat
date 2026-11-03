@@ -531,3 +531,11 @@ Free for personal use under the Aegean License 1.1 (AL-1.1); see [LICENSE](LICEN
 ## 🙏 Acknowledgments
 
 Thank you for using NeuralBeat. This project was created with the goal of making neuro-acoustic technology accessible to everyone.
+
+<!-- aegean:screenshots:start -->
+## Screenshots
+
+<a href="https://github.com/AegeanWorks/NeuralBeat/commit/32c408a"><img src="assets/screenshots/2026-11-03-main.png" alt="NeuralBeat main window at 2026-11-03"></a>
+
+*commit `32c408a` · 2026-11-03 · window 1125x655 · full app via PrintWindow while occluded*
+<!-- aegean:screenshots:end -->
