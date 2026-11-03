@@ -320,6 +320,30 @@ class TestImportConfigIsochronic(unittest.TestCase):
             [{"label": "Low Theta", "carrier_hz": 432.0, "pulse_hz": 4.0}],
         )
 
+    def test_import_keeps_osc_settings(self):
+        payload = {
+            "theme": "darkly",
+            "osc_colors": "Red / Blue",
+            "osc_merge_waves": True,
+            "user_presets": {"Monaural": [], "Binaural": [], "Isochronic": []},
+        }
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".json", delete=False, encoding="utf-8"
+        ) as handle:
+            json.dump(payload, handle)
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+
+        with patch.object(self.sc.filedialog, "askopenfilename", return_value=path), \
+                patch.object(self.sc, "save_config"), \
+                patch.object(self.sc, "build_preset_buttons"), \
+                patch.object(self.sc, "root", MagicMock()), \
+                patch.object(self.sc.messagebox, "showinfo"):
+            self.sc.import_config_json()
+
+        self.assertEqual(self.sc.config.get("osc_colors"), "Red / Blue")
+        self.assertEqual(self.sc.config.get("osc_merge_waves"), True)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,45 +1,16 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "reforge:run-6",
-    "last_phase": "phase 5",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1793295450.9809897,
-    "owner": "opencode:reforge-fix",
-    "started_by": "opencode:reforge-fix",
-    "continuations": [
-      {
-        "agent": "copilot:neuralbeat",
-        "from": "opencode:reforge-fix",
-        "at": 1793456741.6444137
-      }
-    ],
-    "completed_at": 1793456741.6444147
+    "task_id": "neuralbeat:waves-0-30",
+    "last_phase": "phase 4",
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1793723101.5338554,
+    "owner": "kilo:neuralbeat-audit",
+    "started_by": "kilo:neuralbeat-audit",
+    "continuations": []
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-6",
-      "phase": "reforge run",
-      "phase_num": 3,
-      "description": "run started (start=2, step=3, stop=2)",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793295437.3300164,
-      "timestamp_str": "2026-10-29 20:37:17",
-      "agent": "opencode"
-    },
-    {
-      "task_id": "reforge:run-6",
-      "phase": "reforge stage 1",
-      "phase_num": 3,
-      "description": "Reforge stage 1: window 2, 2 commit(s), 2 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
-      "files_affected": [],
-      "status": "completed",
-      "timestamp": 1793295438.5080807,
-      "timestamp_str": "2026-10-29 20:37:18",
-      "agent": "opencode"
-    },
     {
       "task_id": "reforge:run-6",
       "phase": "phase 5",
@@ -245,6 +216,35 @@
       "timestamp_str": "2026-10-31 17:25:41",
       "agent": "copilot:neuralbeat",
       "continued_from": "opencode:reforge-fix"
+    },
+    {
+      "task_id": "neuralbeat:waves-0-30",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] Wave audit plan: survey first-30 commits in waves 0,10,20,30; verify by quote/measure; analyze surviving defects; minimal failing-first fix",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793722855.9373705,
+      "timestamp_str": "2026-11-03 19:20:55",
+      "agent": "kilo:neuralbeat-audit",
+      "impact_assessment": {
+        "why": "First-30 history holds config import/export lineage (v0.8.1) still live at HEAD; unrepaired round-trip loss affects user profiles",
+        "benefits": "Evidence-backed audit with no unverified claims; one minimal repair with regression lock",
+        "risks": "contract: config schema; dependency: none new; concurrency: none; state: user config.json",
+        "mitigation": "Mocked unit test, no audio/hardware, explicit staging, no push"
+      },
+      "plan_digest": "ef029e8c6f1326571e95e1f9e187c80b50a16e3cbd6d2664b2bd1f2cf59d905d"
+    },
+    {
+      "task_id": "neuralbeat:waves-0-30",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Waves 0,10,20,30 audited (first 30 commits); 81 passed pre-fix, 82 passed post-fix; export/import round-trip repaired; checklists: passed; tests 82 passed; gates 4/4",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723101.5338554,
+      "timestamp_str": "2026-11-03 19:25:01",
+      "agent": "kilo:neuralbeat-audit"
     }
   ]
 }

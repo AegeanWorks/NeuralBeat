@@ -7,3 +7,6 @@ __pycache__/
 .aikit/*.corrupt_*
 .aikit/reforge.reviews/
 *.py[cod]
+# AIKit transient state
+.aikit/*.log
+node_modules/

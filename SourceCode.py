@@ -1175,6 +1175,12 @@ def import_config_json():
         if "theme" in imported:
             new_config["theme"] = imported["theme"]
 
+        if imported.get("osc_colors") in OSC_COLOR_PALETTES:
+            new_config["osc_colors"] = imported["osc_colors"]
+
+        if isinstance(imported.get("osc_merge_waves"), bool):
+            new_config["osc_merge_waves"] = imported["osc_merge_waves"]
+
         config = new_config
         save_config(config)
 

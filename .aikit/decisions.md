@@ -48,3 +48,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: No registered screenshots existed; the legacy root capture was unrecorded. Fullscreen ImageGrab framed the IDE because the Tk window never takes focus from a headless launcher.
 - **Decision**: Register `2026-11-03-main.png` (`python SourceCode.py`, PrintWindow on `NeuralBeat 1.0.0`, 1125x655, commit `32c408a`) in `.aikit/media.json` and the README `aegean:screenshots` block. The single window is the whole UI, so one keeper is full coverage. No audio was generated (Generate never pressed).
 - **Consequences**: README proves the current app. Reproduce with the launch plus PrintWindow script above.
+
+### ADR-004: Preserve oscilloscope UI keys on profile import
+- **Date**: 2026-11-03
+- **Status**: Accepted
+- **Context**: Profile import/export was introduced in wave 30 (`01c0274` v0.8.1). `export_config_json` writes the full in-memory config (including `osc_colors`, `osc_merge_waves`), but `import_config_json` rebuilt only `user_presets` plus `theme`, silently dropping the oscilloscope settings on every round-trip.
+- **Decision**: Carry `osc_colors` through only when it names a palette in `OSC_COLOR_PALETTES`, and `osc_merge_waves` only when it is a `bool`; other keys remain excluded and invalid values are ignored without crashing.
+- **Consequences**:
+  - *Positive*: Export then import preserves the visualizer appearance; invalid profile values cannot corrupt the live config.
+  - *Trade-offs*: Unknown future top-level keys are still dropped on import; they need an explicit allow-list entry.
+- Cross-principle check: PRINCIPLE-016 (ADR), PRINCIPLE-013 (state atomicity via existing save path), PRINCIPLE-018 (commit and push).

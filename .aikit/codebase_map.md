@@ -9,8 +9,8 @@
 - **Total Python Modules**: `16`
 - **Total Classes**: `28`
 - **Total Top-Level Functions**: `36`
-- **Total Class Methods**: `135`
-- **Total Source Lines**: `3894`
+- **Total Class Methods**: `136`
+- **Total Source Lines**: `3924`
 
 ---
 
@@ -32,7 +32,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `1735` lines (`67918` bytes)
+**Size**: `1741` lines (`68177` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -183,7 +183,7 @@
 ### [`tests/test_config_presets.py`](tests/test_config_presets.py)
 > *Test config and preset management functions.*
 
-**Size**: `325` lines (`11115` bytes)
+**Size**: `349` lines (`12136` bytes)
 
 **Classes:**
 - `class TestNormalizeCategory` - *Test _normalize_category function.*
@@ -219,6 +219,7 @@
   - Method `.setUpClass()`
   - Method `.tearDownClass()`
   - Method `.test_import_keeps_isochronic_presets()`
+  - Method `.test_import_keeps_osc_settings()`
 
 ---
 
