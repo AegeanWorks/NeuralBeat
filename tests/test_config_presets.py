@@ -61,10 +61,12 @@ class TestNormalizeCategory(unittest.TestCase):
         self.assertEqual(self.sc._normalize_category("  Binaural  "), "Binaural")
     
     def test_normalize_monaural(self):
-        """Test normalization maps monaural to Binaural."""
-        self.assertEqual(self.sc._normalize_category("monaural"), "Binaural")
-        self.assertEqual(self.sc._normalize_category("Monaural"), "Binaural")
-        self.assertEqual(self.sc._normalize_category("monaural beat"), "Binaural")
+        """Test normalization keeps monaural distinct."""
+        self.assertEqual(self.sc._normalize_category("monaural"), "Monaural")
+        self.assertEqual(self.sc._normalize_category("Monaural"), "Monaural")
+        self.assertEqual(self.sc._normalize_category("monaural beat"), "Monaural")
+        # Combined UI label defaults to Binaural; save path auto-splits.
+        self.assertEqual(self.sc._normalize_category("Binaural Beat / Monaural Beat"), "Binaural")
     
     def test_normalize_isochronic(self):
         """Test normalization of isochronic."""

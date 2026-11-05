@@ -48,7 +48,8 @@ class TestConfig(unittest.TestCase):
     def test_normalize_category(self):
         """Test _normalize_category function."""
         self.assertEqual(SourceCode._normalize_category("binaural"), "Binaural")
-        self.assertEqual(SourceCode._normalize_category("Monaural Beat"), "Binaural")
+        self.assertEqual(SourceCode._normalize_category("Monaural Beat"), "Monaural")
+        self.assertEqual(SourceCode._normalize_category("Binaural Beat / Monaural Beat"), "Binaural")
         self.assertEqual(SourceCode._normalize_category(" isochronic "), "Isochronic")
         with self.assertRaises(ValueError):
             SourceCode._normalize_category("invalid")

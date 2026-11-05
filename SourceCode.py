@@ -150,11 +150,16 @@ class NoiseGenerator:
 # Configuration & Persistence
 # =============================================================================
 
+VALID_THEMES = ("darkly", "superhero", "flatly")
+
 def load_config() -> dict:
     """Loads configuration from the JSON file."""
     try:
         if CONFIG_PATH.exists():
-            return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+            logger.error(f"Config {CONFIG_PATH} root must be an object, ignoring.")
     except Exception:
         logger.error(f"Error loading config from {CONFIG_PATH}", exc_info=True)
     return {}
@@ -168,14 +173,27 @@ def save_config(cfg: dict) -> None:
         logger.error(f"Error saving config to {CONFIG_PATH}", exc_info=True)
 
 config = load_config()
+if config.get("theme") not in VALID_THEMES:
+    # Fall back to darkly for missing/invalid themes so tb.Window never crashes.
+    if "theme" in config:
+        logger.error(f"Invalid theme {config.get('theme')!r} in config, falling back to darkly.")
+    config["theme"] = "darkly"
 initial_theme = config.get("theme", "darkly")
 
 def _normalize_category(category: str) -> str:
     c = str(category).strip().lower()
-    if "binaural" in c or "monaural" in c:
-        return "Binaural"
     if "isochronic" in c:
         return "Isochronic"
+    has_binaural = "binaural" in c
+    has_monaural = "monaural" in c
+    if has_binaural and has_monaural:
+        # Combined UI label "Binaural Beat / Monaural Beat" - caller decides
+        # based on frequencies; default to Binaural for backward compat.
+        return "Binaural"
+    if has_monaural:
+        return "Monaural"
+    if has_binaural:
+        return "Binaural"
     raise ValueError("Category must be 'Binaural Beat / Monaural Beat' or 'Isochronic Tone'")
 
 def get_user_presets() -> dict:
@@ -287,6 +305,9 @@ def get_audio_config_from_ui() -> AudioConfig:
     except ValueError:
         raise ValueError("Please enter valid numeric values for volume.")
 
+    if not (0.0 <= noise_volume_val <= 100.0):
+        raise ValueError("Noise volume must be between 0% and 100%.")
+
     left_volume = clamp(left_volume_val / 100.0, 0.0, 1.0)
     right_volume = clamp(right_volume_val / 100.0, 0.0, 1.0)
     noise_volume = clamp(noise_volume_val / 100.0, 0.0, 1.0)
@@ -313,6 +334,12 @@ def get_audio_config_from_ui() -> AudioConfig:
              raise ValueError("Beat frequency must be between 0.1 Hz and 100 Hz.")
         if not (0.1 <= r_end <= 100.0):
              raise ValueError("Beat frequency must be between 0.1 Hz and 100 Hz.")
+        if not (0.5 <= r_min <= 120.0):
+             raise ValueError("Ramp duration must be between 0.5 and 120 minutes.")
+        # Keep left channel non-negative: carrier - beat/2 >= 20 Hz lower bound
+        max_beat = max(r_start, r_end)
+        if beat_type != "isochronic" and r_carrier - (max_beat / 2.0) < 20.0:
+             raise ValueError("Carrier must be at least 20 Hz above beat/2 so left channel stays audible (>=20 Hz).")
 
         ramp_duration_s = max(0.0, r_min * 60.0)
 
@@ -539,6 +566,7 @@ class IsochronicGenerator:
     def __init__(self, cfg: AudioConfig):
         self.cfg = cfg
         self.phase = 0.0
+        self.pulse_phase = 0.0  # 0..1 cycle phase for the gating LFO, phase-continuous across blocks
         self.samples_generated = 0
         self.ramp_s = cfg.ramp_duration_s
 
@@ -586,8 +614,15 @@ class IsochronicGenerator:
 
         carrier_wave = self.wave_func(phase_vec)
 
-        period_samples = self.cfg.sample_rate / beat_hz
-        pulse = np.mod(np.arange(frames, dtype=np.float64) + self.samples_generated, period_samples) < (period_samples * 0.5)
+        # Phase-continuous 50% duty-cycle pulse gate.
+        # Old code used mod(global_index, sr/beat) which glitches when beat_hz
+        # ramps (period changes per-sample). Use a pulse-phase accumulator
+        # instead: phase += beat/sr per sample, on when phase < 0.5.
+        pulse_inc = beat_hz / self.cfg.sample_rate
+        pulse_shift = np.concatenate(([0.0], np.cumsum(pulse_inc)[:-1]))
+        pulse_vec = (self.pulse_phase + pulse_shift) % 1.0
+        self.pulse_phase = (self.pulse_phase + np.sum(pulse_inc)) % 1.0
+        pulse = pulse_vec < 0.5
 
         mono = self.cfg.left_volume * carrier_wave * pulse.astype(np.float64)
 
@@ -935,10 +970,15 @@ def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, prog
     """Background thread function for exporting audio to a WAV file."""
     try:
         sample_rate = cfg.sample_rate
+        # Clamp to 1s..60min to avoid accidental multi-GB exports.
+        duration = max(1.0, min(float(duration), 3600.0))
         total_frames = int(duration * sample_rate)
         block_size = 4096
 
-        generator = BinauralGenerator(cfg)
+        if cfg.beat_type == "isochronic":
+            generator = IsochronicGenerator(cfg)
+        else:
+            generator = BinauralGenerator(cfg)
 
         frames_written = 0
         all_audio = []
@@ -995,6 +1035,12 @@ def export_audio_file():
             duration = float(duration_str)
             if duration <= 0:
                 raise ValueError
+            if duration > 3600:
+                messagebox.showerror("Input Error", "Duration must be 1-3600 seconds (max 60 min) to avoid huge files.")
+                return
+            if duration < 1:
+                messagebox.showerror("Input Error", "Duration must be at least 1 second.")
+                return
         except ValueError:
             messagebox.showerror("Input Error", "Duration must be a positive number.")
             return
@@ -1173,7 +1219,11 @@ def import_config_json():
         }
 
         if "theme" in imported:
-            new_config["theme"] = imported["theme"]
+            t = imported["theme"]
+            if isinstance(t, str) and t.strip() in VALID_THEMES:
+                new_config["theme"] = t.strip()
+            else:
+                logger.error(f"Ignoring invalid theme {t!r} in imported profile.")
 
         if imported.get("osc_colors") in OSC_COLOR_PALETTES:
             new_config["osc_colors"] = imported["osc_colors"]
@@ -1261,8 +1311,11 @@ def save_current_as_preset():
             return
 
         category = preset_category_var.get().strip()
-        if not category:
-            category = "Binaural" if abs(right_hz - left_hz) > 0 else "Monaural"
+        c_low = category.lower()
+        # Combined UI label carries both words; auto-split so Monaural user
+        # presets are actually reachable (left == right -> Monaural).
+        if ("binaural" in c_low and "monaural" in c_low) or not category:
+            category = "Monaural" if abs(right_hz - left_hz) <= 1e-9 else "Binaural"
 
         if _normalize_category(category) == "Isochronic":
             if not (0.1 <= left_hz <= 100.0):
@@ -1294,7 +1347,14 @@ def delete_preset():
             raise ValueError("Enter the preset name to remove (must match exactly).")
 
         if messagebox.askyesno("Remove Preset", f"Remove user preset '{label}' from {category}?"):
-            removed = remove_user_preset(category=category, label=label)
+            c_low = category.lower()
+            if "binaural" in c_low and "monaural" in c_low:
+                # Combined UI label: try both stores so Monaural deletions work.
+                removed = remove_user_preset(category="Binaural", label=label)
+                if not removed:
+                    removed = remove_user_preset(category="Monaural", label=label)
+            else:
+                removed = remove_user_preset(category=category, label=label)
             if removed:
                 build_preset_buttons()
                 messagebox.showinfo("Preset Removed", f"Removed preset '{label}'")
@@ -1356,12 +1416,17 @@ def update_live_status():
             block = audio_engine.get_last_block()
             if block is not None and len(block) > 0 and osc_plot_buffer_l is not None:
                 n_frames = len(block)
-
-                # Roll the buffers and append new data
-                osc_plot_buffer_l = np.roll(osc_plot_buffer_l, -n_frames)
-                osc_plot_buffer_r = np.roll(osc_plot_buffer_r, -n_frames)
-                osc_plot_buffer_l[-n_frames:] = block[:, 0]
-                osc_plot_buffer_r[-n_frames:] = block[:, 1]
+                buf_len = len(osc_plot_buffer_l)
+                # Guard against callback blocks larger than the plot buffer.
+                if n_frames >= buf_len:
+                    osc_plot_buffer_l = np.asarray(block[-buf_len:, 0], dtype=np.float32)
+                    osc_plot_buffer_r = np.asarray(block[-buf_len:, 1], dtype=np.float32)
+                else:
+                    # Roll the buffers and append new data
+                    osc_plot_buffer_l = np.roll(osc_plot_buffer_l, -n_frames)
+                    osc_plot_buffer_r = np.roll(osc_plot_buffer_r, -n_frames)
+                    osc_plot_buffer_l[-n_frames:] = block[:, 0]
+                    osc_plot_buffer_r[-n_frames:] = block[:, 1]
 
                 # Update the plot data
                 if is_merged:
