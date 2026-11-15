@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "neuralbeat:strobe-adoption",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1794772831.8264158,
     "owner": "claude:node1",
     "started_by": "claude:node1",
@@ -14,29 +14,12 @@
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ]
+    ],
+    "completed_at": 1794772848.6416378,
+    "completed_head": "d0c0175bc88d3d5ffbaef4d28dd7875dd5ee5ccd",
+    "completed_tree": "895f7b2c6cd27fe91295ef735b7cc6fea949305b"
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:post-audit-hardening",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/5] Added is_combined_beat_label helper; used at _normalize_category, save_current_as_preset, delete_preset; EXPORT_MIN/MAX_DURATION_S constants shared by UI validation and thread clamp; failing-first tests for helper and constants",
-      "files_affected": [
-        "SourceCode.py",
-        "tests/test_verify_fixes.py"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794768549.961328,
-      "timestamp_str": "2026-11-15 21:49:09",
-      "agent": "claude:node1",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:post-audit-hardening",
       "phase": "phase 3",
@@ -418,6 +401,22 @@
           "path": "projects/NeuralBeat"
         }
       ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'neuralbeat:strobe-adoption' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794772848.6881514,
+      "timestamp_str": "2026-11-15 23:00:48",
+      "agent": "claude:node1",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
