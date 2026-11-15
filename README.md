@@ -57,6 +57,8 @@ NeuralBeat/
 ├── requirements.txt
 ├── run_tests.py
 ├── SourceCode.py
+├── start_neuralbeat.bat       <- one-click starter (Windows)
+├── start_neuralbeat.sh        <- one-click starter (macOS / Linux)
 ├── visual.py                  <- strobe visual mode core (pure stdlib)
 └── verification.py
 ```
@@ -241,6 +243,26 @@ Isochronic tones represent the most recent advancement in brainwave entrainment 
 | 8 Hz Pulse @ 432 Hz | 8 Hz | 432 Hz | Alpha |
 | 16 Hz Pulse @ 432 Hz | 16 Hz | 432 Hz | Beta |
 | 40 Hz Pulse @ 432 Hz | 40 Hz | 432 Hz | Gamma |
+
+---
+
+## ⚡ One-Click Start
+
+No terminal steps needed. Double-click the launcher for your platform in the
+project folder:
+
+| Platform | Launcher |
+|---|---|
+| Windows | `start_neuralbeat.bat` (double-click) |
+| macOS / Linux | `start_neuralbeat.sh` (double-click → Run, or `./start_neuralbeat.sh`) |
+
+The first run creates an isolated `.venv`, installs the dependencies from
+`requirements.txt` (internet needed once) and starts NeuralBeat. Later runs
+start instantly using the same environment.
+
+If anything fails, the launcher prints a short `Why:`/`Fix:` message naming
+the exact remedy (e.g. installing Python 3.10+, or `python3-venv` on
+Debian/Ubuntu). You can still follow the manual steps below.
 
 ---
 

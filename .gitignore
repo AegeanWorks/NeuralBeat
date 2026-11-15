@@ -10,3 +10,6 @@ __pycache__/
 # AIKit transient state
 .aikit/*.log
 node_modules/
+
+# One-click starter environment
+.venv/

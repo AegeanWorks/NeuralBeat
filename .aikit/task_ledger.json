@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "neuralbeat:visual-audit-fixes",
+    "task_id": "neuralbeat:one-click-starter",
     "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1794774395.5992954,
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1794777324.2421865,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -14,60 +14,9 @@
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ],
-    "completed_at": 1794774541.2937322,
-    "completed_head": "585157b36b72543bfb6e749e986af3cb76068128",
-    "completed_tree": "7dedd04d93985d2a91ad3f9d15e4fd803215d73c"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:adopt-fork-hardening",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Adopt from MoriNo23 fork: tests/conftest.py deterministic import environment + per-file mock alignment (numpy/scipy always real)",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794770013.5140412,
-      "timestamp_str": "2026-11-15 22:13:33",
-      "agent": "claude:node1",
-      "impact_assessment": {
-        "why": "Empirically verified: our suite fails 14 tests when pytest collects files in a different order (per-file MOCK_MODULES race); the new CI plus any future ordering change makes this a real flakiness risk. The MoriNo23 fork (fetched from their push 2026-10-19) diagnosed the same problem and shipped conftest.py; their version alone left 13 failures in reversed order because their per-file blocks still mock numpy",
-        "benefits": "Order-independent test suite; real numpy/scipy in every test regardless of collection order; standalone file runs keep working; baseline for later adoption of the fork's strobe feature tests",
-        "risks": "contract: conftest imports before test modules -- files keep their guarded sys.modules installs so standalone runs still work; dependency: none new; concurrency: none (test-only); state: tests/conftest.py is a new untracked file -- review ensure not accidentally left uncommitted",
-        "mitigation": "Verification runs the suite in normal AND reversed file order; failing order-dependence was reproduced first (14 failed); keep edits test-file-local, zero SourceCode.py changes"
-      },
-      "plan_digest": "013dd8c6a3b83318968cec08be255f141bb99d76ff96a8c1eed69b05e6a6a7e8",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
-    {
-      "task_id": "neuralbeat:adopt-fork-hardening",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/2] conftest.py adopted (English, numpy/scipy kept real) + per-file mock alignment: numpy/scipy removed from test_ui_logic/test_utils blocks, dead mock_scipy scrubbed from test_audio_engine, test_dsp reinstalls now guarded; verified green in default order (100), reversed order (100) and UI-first subset (43); checklists: passed; note: direct-file run of test_dsp_generators.py lacks a sys.path insert (pre-existing upstream-wide quirk; pytest/conftest unaffected)",
-      "files_affected": [
-        "tests/conftest.py",
-        "tests/test_ui_logic.py",
-        "tests/test_utils.py",
-        "tests/test_audio_engine.py",
-        "tests/test_dsp_generators.py"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794770101.9621594,
-      "timestamp_str": "2026-11-15 22:15:01",
-      "agent": "claude:node1",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:adopt-fork-hardening",
       "phase": "completed",
@@ -420,6 +369,49 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "neuralbeat:one-click-starter",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[1/2] one-click launcher: bat (Windows) + sh (POSIX), venv bootstrap, dep install, GUI start; README section",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794775592.341308,
+      "timestamp_str": "2026-11-15 23:46:32",
+      "agent": "claude:node1",
+      "impact_assessment": {
+        "why": "Installation needs 4 manual terminal steps today; PRINCIPLE-011 targets instant usability for a desktop app aimed at non-technical users",
+        "benefits": "double-click start on Windows and one command on macOS/Linux; isolated .venv avoids polluting system python; friendly Why/Fix errors when python is missing",
+        "risks": "venv creation fails on Debian without python3-venv; pip offline; pythonw hides startup errors; bat error text misleads users of very old python",
+        "mitigation": "Why/Fix messages name the exact remedy; pip failures point to the FAQ/issues; startup failure path keeps the console open with the direct terminal command; README documents the python3-venv requirement"
+      },
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:one-click-starter",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[2/2] launcher verified end to end: fresh run created .venv, installed deps, GUI window 'NeuralBeat 1.0.0' up, exit 0; side fix removed a cmd parse bug (parenthesised echo inside if-block)",
+      "files_affected": [
+        "projects/NeuralBeat/start_neuralbeat.bat"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794777324.2421865,
+      "timestamp_str": "2026-11-16 00:15:24",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
     }
   ]
 }
