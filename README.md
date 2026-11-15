@@ -207,6 +207,8 @@ Isochronic tones represent the most recent advancement in brainwave entrainment 
   visual section of `~/.neuralbeat/config.json`
 - Photosensitive-epilepsy warning and explicit consent before first use;
   comfortable (default) or bright intensity; exit with any key or click
+- Consent is revocable at any time via Settings > Visual > "Revoke
+  photosensitive consent"; the warning is shown again before the next use
 - Available from the bottom-bar Visual mode button while audio is playing
 
 ### 🧪 Scientifically Verified

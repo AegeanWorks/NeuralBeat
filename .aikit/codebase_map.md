@@ -7,10 +7,10 @@
 
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `21`
-- **Total Classes**: `56`
+- **Total Classes**: `59`
 - **Total Top-Level Functions**: `72`
-- **Total Class Methods**: `242`
-- **Total Source Lines**: `6617`
+- **Total Class Methods**: `249`
+- **Total Source Lines**: `6719`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`21` module(s))
@@ -474,7 +474,7 @@
 ### [`tests/test_visual_mode.py`](tests/test_visual_mode.py)
 > *SourceCode-dependent tests for the visual strobe module.*
 
-**Size**: `227` lines (`9240` bytes)
+**Size**: `329` lines (`14053` bytes)
 
 **Classes:**
 - `class TestRateRequest`
@@ -492,6 +492,16 @@
   - Method `.tearDown()`
   - Method `.test_scheduler_arrancado_y_modo_activo()`
   - Method `.test_modo_sigue_activo_tras_el_segundo_poll()`
+- `class TestWindowsProbeDispatch` - *El sondeo nominal del sistema despacha por plataforma (PRINCIPLE-003).*
+  - Method `.test_en_windows_usa_el_helper_y_no_lanza_xrandr()`
+  - Method `.test_en_no_windows_sigue_usando_xrandr()`
+- `class TestRevokeConsent` - *El consentimiento fotosensible se puede revocar (auditoria, fix c).*
+  - Method `.setUp()`
+  - Method `.test_sin_consentimiento_guardado_no_pide_nada()`
+  - Method `.test_con_consentimiento_confirma_y_guarda_false()`
+  - Method `.test_con_consentimiento_cancelado_no_guarda_nada()`
+- `class TestZeroRateGuidance` - *Entradas frescas 432/432: guia neutra, no estado de error (fix d).*
+  - Method `.test_432_432_sin_arranque_muestra_guia_neutra(*mocks)`
 
 **Functions:**
 - `def patch_visual_ui_globals(func)` - *Parchea las variables de UI que lee get_visual_rate_request.*
