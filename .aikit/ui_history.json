@@ -116,5 +116,24 @@
     "final_snapshot_digest": "",
     "final_snapshot_entries": 0,
     "surface_digest": "4e18e03da133f9134a3eda3cc18c1a28b55aa4ae8355dbd8740bd8d246688949"
+  },
+  {
+    "schema": 1,
+    "surface": "app",
+    "mode": "visual",
+    "visual_change": true,
+    "changed_paths": [],
+    "no_visual_reason": "",
+    "no_change_reason": "digest re-record after hygiene-allow comment markers: fresh PrintWindow capture is pixel-identical to the reviewed bottom-row capture (diff bbox None); UI unchanged, code tree identical to the reviewed one",
+    "baseline_commit": "89be7a3192ef5468c2cf95f7719dc9f6abac4e31",
+    "contract_hash": "68a10fc78336e4c0ac11d6154f2b819baefdbe517a4234a7bb06f0d75ae93885",
+    "started_at": 1794772798.794022,
+    "finished_at": 1794772831.2534842,
+    "strikes": 0,
+    "reviewer": "claude:node1",
+    "allowed_removals": [],
+    "final_snapshot_digest": "",
+    "final_snapshot_entries": 0,
+    "surface_digest": "a4a5b0ad4aef907ea0097a133204e2068380e93b01eb2cfb778b8b960f3106f0"
   }
 ]
