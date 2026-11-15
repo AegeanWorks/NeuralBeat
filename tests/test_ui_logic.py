@@ -236,5 +236,123 @@ class TestUiLogic(unittest.TestCase):
             mock_beat_type_var.set.assert_called_with("isochronic")
 
 
+class TestRampAndNoiseBoundaries(unittest.TestCase):
+    """Boundary coverage for the ramp and noise validation rules."""
+
+    def _assert_ramp_error(self, *mocks, ramp_minutes, carrier="528",
+                           start="20", end="8", beat_type="binaural",
+                           noise="0", pattern):
+        (
+            ramp_minutes_entry, end_beat_entry, start_beat_entry, carrier_entry,
+            beat_type_var, ramp_enabled_var, noise_type_var, right_waveform_var,
+            left_waveform_var, noise_volume_entry, right_volume_entry, left_volume_entry,
+            right_frequency_entry, left_frequency_entry
+        ) = mocks
+
+        ramp_enabled_var.get.return_value = True
+        carrier_entry.get.return_value = carrier
+        start_beat_entry.get.return_value = start
+        end_beat_entry.get.return_value = end
+        ramp_minutes_entry.get.return_value = ramp_minutes
+        left_volume_entry.get.return_value = "50"
+        right_volume_entry.get.return_value = "50"
+        noise_volume_entry.get.return_value = noise
+        left_waveform_var.get.return_value = "Sine"
+        right_waveform_var.get.return_value = "Sine"
+        noise_type_var.get.return_value = "None"
+        beat_type_var.get.return_value = beat_type
+
+        with self.assertRaisesRegex(ValueError, pattern):
+            SourceCode.get_audio_config_from_ui()
+
+    @patch_ui_globals
+    def test_ramp_duration_below_minimum_rejected(self, *mocks):
+        self._assert_ramp_error(*mocks, ramp_minutes="0.4",
+                                pattern="Ramp duration must be between 0.5 and 120 minutes.")
+
+    @patch_ui_globals
+    def test_ramp_duration_above_maximum_rejected(self, *mocks):
+        self._assert_ramp_error(*mocks, ramp_minutes="120.5",
+                                pattern="Ramp duration must be between 0.5 and 120 minutes.")
+
+    @patch_ui_globals
+    def test_ramp_carrier_audibility_below_bound_rejected(self, *mocks):
+        # carrier 29 Hz, beat 20 Hz: left channel = 29 - 10 = 19 Hz < 20 Hz
+        self._assert_ramp_error(*mocks, ramp_minutes="10", carrier="29.0",
+                                start="20", end="20",
+                                pattern="left channel stays audible")
+
+    @patch_ui_globals
+    def test_ramp_carrier_audibility_at_bound_accepted(self, *mocks):
+        (
+            ramp_minutes_entry, end_beat_entry, start_beat_entry, carrier_entry,
+            beat_type_var, ramp_enabled_var, noise_type_var, right_waveform_var,
+            left_waveform_var, noise_volume_entry, right_volume_entry, left_volume_entry,
+            right_frequency_entry, left_frequency_entry
+        ) = mocks
+
+        ramp_enabled_var.get.return_value = True
+        carrier_entry.get.return_value = "30.0"
+        start_beat_entry.get.return_value = "20"
+        end_beat_entry.get.return_value = "20"
+        ramp_minutes_entry.get.return_value = "10"
+        left_volume_entry.get.return_value = "50"
+        right_volume_entry.get.return_value = "50"
+        noise_volume_entry.get.return_value = "0"
+        left_waveform_var.get.return_value = "Sine"
+        right_waveform_var.get.return_value = "Sine"
+        noise_type_var.get.return_value = "None"
+        beat_type_var.get.return_value = "binaural"
+
+        cfg = SourceCode.get_audio_config_from_ui()
+        self.assertEqual(cfg.carrier_hz, 30.0)
+
+    @patch_ui_globals
+    def test_noise_volume_out_of_range_rejected(self, *mocks):
+        self._assert_ramp_error(*mocks, ramp_minutes="10", noise="100.5",
+                                pattern="Noise volume must be between 0% and 100%.")
+
+
+class TestPresetAutoSplit(unittest.TestCase):
+    def _patch_preset_entries(self, stack, label, category):
+        for name in ('preset_category_var', 'preset_name_entry'):
+            stack.enter_context(patch(f'SourceCode.{name}', MagicMock()))
+        SourceCode.preset_name_entry.get.return_value = label
+        SourceCode.preset_category_var.get.return_value = category
+
+    @patch('SourceCode.messagebox.showinfo')
+    @patch('SourceCode.build_preset_buttons')
+    @patch('SourceCode.add_user_preset')
+    def test_save_preset_auto_splits_combo_label(self, mock_add, *_):
+        with ExitStack() as stack:
+            self._patch_preset_entries(stack, " My Preset ", "Binaural Beat / Monaural Beat")
+            left_entry = MagicMock()
+            left_entry.get.return_value = "432.0"
+            right_entry = MagicMock()
+            right_entry.get.return_value = "431.5"
+            stack.enter_context(patch('SourceCode.left_frequency_entry', left_entry))
+            stack.enter_context(patch('SourceCode.right_frequency_entry', right_entry))
+            SourceCode.save_current_as_preset()
+        kwargs = mock_add.call_args.kwargs
+        self.assertEqual(kwargs["category"], "Binaural")
+        self.assertEqual(kwargs["label"], "My Preset")
+
+    @patch('SourceCode.messagebox.showinfo')
+    @patch('SourceCode.build_preset_buttons')
+    @patch('SourceCode.add_user_preset')
+    def test_save_preset_split_monaural_on_equal_frequencies(self, mock_add, *_):
+        with ExitStack() as stack:
+            self._patch_preset_entries(stack, "Mono Preset", "")
+            left_entry = MagicMock()
+            left_entry.get.return_value = "432.0"
+            right_entry = MagicMock()
+            right_entry.get.return_value = "432.0"
+            stack.enter_context(patch('SourceCode.left_frequency_entry', left_entry))
+            stack.enter_context(patch('SourceCode.right_frequency_entry', right_entry))
+            SourceCode.save_current_as_preset()
+        kwargs = mock_add.call_args.kwargs
+        self.assertEqual(kwargs["category"], "Monaural")
+
+
 if __name__ == '__main__':
     unittest.main()

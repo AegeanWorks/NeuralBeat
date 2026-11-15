@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import tempfile
+import threading
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -131,6 +132,83 @@ class TestConfigRobustness(unittest.TestCase):
              patch.object(sc.messagebox, "showinfo"):
             sc.import_config_json()
         self.assertNotEqual(sc.config.get("theme"), "not-a-theme")
+
+
+class TestCombinedLabelHelper(unittest.TestCase):
+    def test_combined_label_helper(self):
+        self.assertTrue(sc.is_combined_beat_label("Binaural Beat / Monaural Beat"))
+        self.assertTrue(sc.is_combined_beat_label(" binaural / monaural "))
+        self.assertFalse(sc.is_combined_beat_label("Binaural"))
+        self.assertFalse(sc.is_combined_beat_label("Monaural Beat"))
+        self.assertFalse(sc.is_combined_beat_label("Isochronic Tone"))
+        self.assertFalse(sc.is_combined_beat_label(""))
+
+    def test_export_duration_constants_shared(self):
+        self.assertEqual(sc.EXPORT_MIN_DURATION_S, 1.0)
+        self.assertEqual(sc.EXPORT_MAX_DURATION_S, 3600.0)
+
+
+class TestExportCancellation(unittest.TestCase):
+    def test_cancelled_export_writes_nothing(self):
+        cfg = sc.AudioConfig(
+            sample_rate=44100, left_volume=0.5, right_volume=0.5,
+            left_waveform="Sine", right_waveform="Sine",
+            noise_type="None", noise_volume=0.0, use_ramp=False,
+            left_frequency=10.0, right_frequency=432.0, carrier_hz=432.0,
+            start_beat_hz=0.0, end_beat_hz=0.0, ramp_duration_s=0.0,
+            beat_type="binaural",
+        )
+        cancel = threading.Event()
+        cancel.set()
+        written = []
+        with patch.object(sc, "root", MagicMock()), \
+             patch.object(sc.wavfile, "write", side_effect=lambda *a, **k: written.append(a)):
+            sc._run_export_thread(cfg, "dummy.wav", 0.05, MagicMock(),
+                                  MagicMock(), MagicMock(),
+                                  lambda f: None, lambda e: None,
+                                  cancel_event=cancel)
+        self.assertEqual(written, [])
+
+    def test_uncancelled_export_writes_file(self):
+        cfg = sc.AudioConfig(
+            sample_rate=44100, left_volume=0.5, right_volume=0.5,
+            left_waveform="Sine", right_waveform="Sine",
+            noise_type="None", noise_volume=0.0, use_ramp=False,
+            left_frequency=10.0, right_frequency=432.0, carrier_hz=432.0,
+            start_beat_hz=0.0, end_beat_hz=0.0, ramp_duration_s=0.0,
+            beat_type="binaural",
+        )
+        written = []
+        with patch.object(sc, "root", MagicMock()), \
+             patch.object(sc.wavfile, "write", side_effect=lambda *a, **k: written.append(a)):
+            sc._run_export_thread(cfg, "dummy.wav", 0.05, MagicMock(),
+                                  MagicMock(), MagicMock(),
+                                  lambda f: None, lambda e: None)
+        self.assertEqual(len(written), 1)
+
+
+class TestConfigQuarantine(unittest.TestCase):
+    def test_corrupt_config_is_quarantined(self):
+        from pathlib import Path as RealPath
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = RealPath(tmp) / "config.json"
+            cfg_path.write_text("{ this is not json", encoding="utf-8")
+            with patch.object(sc, "CONFIG_PATH", cfg_path):
+                self.assertEqual(sc.load_config(), {})
+            self.assertFalse(cfg_path.exists(), "corrupt config must not be left in place")
+            quarantined = list(RealPath(tmp).glob("config.json.corrupt*"))
+            self.assertEqual(len(quarantined), 1)
+            self.assertEqual(quarantined[0].read_text(encoding="utf-8"), "{ this is not json")
+
+    def test_valid_config_is_not_quarantined(self):
+        from pathlib import Path as RealPath
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg_path = RealPath(tmp) / "config.json"
+            cfg_path.write_text('{"theme": "darkly"}', encoding="utf-8")
+            with patch.object(sc, "CONFIG_PATH", cfg_path):
+                self.assertEqual(sc.load_config(), {"theme": "darkly"})
+            self.assertTrue(cfg_path.exists())
+            self.assertEqual(list(RealPath(tmp).glob("config.json.corrupt*")), [])
 
 
 if __name__ == "__main__":

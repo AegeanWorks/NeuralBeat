@@ -3,3 +3,4 @@ scipy
 sounddevice
 ttkbootstrap
 matplotlib
+pytest
