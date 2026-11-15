@@ -1131,7 +1131,8 @@ def run_screen_calibration():
         try:
             cal_win.update_idletasks()
             cal_win.update()
-        except Exception:
+        # hygiene: allow best-effort Tk guard; window may be closing
+        except tk.TclError:
             pass
         colors = ("#FFFFFF", "#000000")
         t_end = time.perf_counter() + 2.0
@@ -1147,7 +1148,8 @@ def run_screen_calibration():
         if cal_win is not None:
             try:
                 cal_win.destroy()
-            except Exception:
+            # hygiene: allow best-effort Tk guard; window may be closing
+            except tk.TclError:
                 pass
     try:
         refresh, jitter = visual.compute_refresh_stats(stamps)
@@ -1224,7 +1226,8 @@ def start_visual_mode(cap, req):
     def _on_strobe_resize(event):
         try:
             strobe_canvas.coords(strobe_rect, 0, 0, event.width, event.height)
-        except Exception:
+        # hygiene: allow best-effort flip; widget may be destroyed at exit
+        except tk.TclError:
             pass
 
     strobe_canvas.bind("<Configure>", _on_strobe_resize)
@@ -1233,7 +1236,8 @@ def start_visual_mode(cap, req):
         try:
             strobe_canvas.itemconfig(strobe_rect,
                                      fill=on_color if state else off_color)
-        except Exception:
+        # hygiene: allow best-effort flip; widget may be destroyed at exit
+        except tk.TclError:
             pass
 
     def _rebuild(rate_hz):
@@ -1266,7 +1270,8 @@ def start_visual_mode(cap, req):
     strobe_win.protocol("WM_DELETE_WINDOW", lambda: close_visual_mode())
     try:
         strobe_win.focus_force()
-    except Exception:
+    # hygiene: allow best-effort focus grab; window may be closing
+    except tk.TclError:
         pass
 
     visual_window = strobe_win
@@ -1345,7 +1350,8 @@ def visual_poll():
     try:
         delay_ms = max(1.0, min(100.0,
                                 (next_deadline - time.perf_counter()) * 1000.0 - 1.0))
-    except Exception:
+    # hygiene: allow defensive tail scheduling; next iteration reschedules anyway
+    except (TypeError, ValueError):
         pass
     visual_after_id = root.after(int(delay_ms), visual_poll)
 
@@ -1358,7 +1364,8 @@ def close_visual_mode(reason=None):
     if visual_after_id is not None:
         try:
             root.after_cancel(visual_after_id)
-        except Exception:
+        # hygiene: allow best-effort cancel; loop may have already fired
+        except tk.TclError:
             pass
         visual_after_id = None
     if visual_scheduler is not None:
@@ -1369,7 +1376,8 @@ def close_visual_mode(reason=None):
         visual_window = None
         try:
             win.destroy()
-        except Exception:
+        # hygiene: allow best-effort close; window may already be destroyed
+        except tk.TclError:
             pass
     was_active = visual_mode_active
     visual_mode_active = False
@@ -1385,7 +1393,8 @@ def close_visual_mode(reason=None):
         try:
             root.deiconify()
             root.focus_set()
-        except Exception:
+        # hygiene: allow best-effort restore; root may be shutting down
+        except tk.TclError:
             pass
     update_visual_button()
 

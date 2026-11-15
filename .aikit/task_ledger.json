@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794772603.2027583,
+    "updated_at": 1794772773.5665982,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,22 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:waves-0-30",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'neuralbeat:waves-0-30' completed successfully.",
-      "status": "completed",
-      "timestamp": 1794768146.9661093,
-      "timestamp_str": "2026-11-15 21:42:26",
-      "agent": "claude:node1",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "neuralbeat:post-audit-hardening",
       "phase": "phase 2",
@@ -411,6 +395,28 @@
       "status": "in_progress",
       "timestamp": 1794772603.2027583,
       "timestamp_str": "2026-11-15 22:56:43",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/6] tests/test_visual_mode.py restored (10 tests: rate request resolution x5, xrandr probe x2, start/poll regression x2, integer probe) - all green against the real wiring (159 total); run_screen_calibration silent excepts narrowed to tk.TclError with hygiene allows; README: visual.py in tree, strobe feature section + docs; map refreshed. checklists: passed",
+      "files_affected": [
+        "tests/test_visual_mode.py",
+        "SourceCode.py",
+        "README.md"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794772773.5665982,
+      "timestamp_str": "2026-11-15 22:59:33",
       "agent": "claude:node1",
       "checklists": "passed",
       "workspaces": [

@@ -57,6 +57,7 @@ NeuralBeat/
 ├── requirements.txt
 ├── run_tests.py
 ├── SourceCode.py
+├── visual.py                  <- strobe visual mode core (pure stdlib)
 └── verification.py
 ```
 
@@ -197,6 +198,16 @@ Isochronic tones represent the most recent advancement in brainwave entrainment 
 - Three built-in themes:
   - Darkly and Superhero (dark), Flatly (light)
 - Easy theme switching via Settings menu
+
+### 🔆 Visual Strobe Mode
+- Full-screen strobe locked to the audio pulse phase, not the system clock
+- Honest screen gate: only rhythms the measured refresh can actually emit
+  (exact divisor frames, time-tight periodic windows, opt-in experimental harmonic)
+- Screen calibration (~2 s) measures the real refresh rate and stores it in the
+  visual section of `~/.neuralbeat/config.json`
+- Photosensitive-epilepsy warning and explicit consent before first use;
+  comfortable (default) or bright intensity; exit with any key or click
+- Available from the bottom-bar Visual mode button while audio is playing
 
 ### 🧪 Scientifically Verified
 - Built-in `--debug` mode for self-testing
@@ -430,6 +441,7 @@ Output:
 ### Code Structure
 
 - **SourceCode.py**: Main application and UI
+- **visual.py**: Screen capability gate, frame patterns, calibration stats and the audio-anchored strobe scheduler
 - **presets.py**: Built-in frequency presets
 - **verification.py**: Scientific validation module
 

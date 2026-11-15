@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `20`
-- **Total Classes**: `53`
-- **Total Top-Level Functions**: `54`
-- **Total Class Methods**: `229`
-- **Total Source Lines**: `5638`
+- **Total Python Modules**: `21`
+- **Total Classes**: `56`
+- **Total Top-Level Functions**: `70`
+- **Total Class Methods**: `241`
+- **Total Source Lines**: `6495`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`20` module(s))
+- **Indexed**: python (`21` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -36,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `1838` lines (`73333` bytes)
+**Size**: `2468` lines (`99054` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -74,6 +74,21 @@
 - `def _compute_ramped_beat_hz(elapsed_s, start_beat_hz, end_beat_hz, ramp_s)` - *Calculates the current beat frequency based on ramp progress.*
 - `def get_audio_config_from_ui()` - *Reads values from UI entries and returns an AudioConfig object.*
 - `def stop_audio()`
+- `def get_visual_settings()` - *The visual section of config merged with defaults (backwards compatible).*
+- `def save_visual_setting(key, value)` - *Persist one key of the visual section in ~/.neuralbeat/config.json.*
+- `def get_visual_refresh_hz()` - *Calibrated screen refresh (conservative default when absent).*
+- `def probe_system_refresh_hz()` - *Nominal refresh reported by the system (xrandr). None when unavailable.*
+- `def get_visual_rate_request()` - *Resolves the requested visual rhythm from the UI state.*
+- `def get_visual_audio_time()` - *Audio time of the active stream (master clock: samples_generated).*
+- `def compute_visual_capability()` - *(request, VisualCapability) from the UI state and current calibration.*
+- `def update_visual_button()` - *Visible state of the Visual mode button: exact / approximate / harmonic*
+- `def toggle_visual_mode()` - *Visual mode button action: gate + consent + start-up.*
+- `def set_visual_intensity()` - *Comfy intensity (default) or bright (opt-in, with a warning).*
+- `def on_visual_harmonics_toggle()` - *Advanced flag of the experimental harmonic mode (off by default).*
+- `def run_screen_calibration()` - *Measures the real screen refresh (~2s full-screen).*
+- `def start_visual_mode(cap, req)` - *Opens the full-screen strobe anchored to the playing audio.*
+- `def visual_poll()` - *Tk loop of the visual mode: deadline flips, audio watchdog and an*
+- `def close_visual_mode(reason)` - *Closes the visual mode and restores the main window (focus included).*
 - `def set_osc_merge_waves()` - *Saves the merge waves setting and updates the live plot's static elements.*
 - `def set_osc_colors(palette_name)` - *Sets the oscilloscope color palette and saves to config.*
 - `def toggle_oscilloscope_window()` - *Opens or closes the real-time oscilloscope window.*
@@ -450,6 +465,33 @@
   - Method `.test_umbral_de_aborto()`
   - Method `.test_ventana_desliza()`
   - Method `.test_pocas_muestras_no_abortan()`
+
+---
+
+### [`tests/test_visual_mode.py`](tests/test_visual_mode.py)
+> *SourceCode-dependent tests for the visual strobe module.*
+
+**Size**: `227` lines (`9240` bytes)
+
+**Classes:**
+- `class TestRateRequest`
+  - Method `.test_binaural_modulo_canal(*mocks)`
+  - Method `.test_binaural_orden_invertido(*mocks)`
+  - Method `.test_isocronico_usa_pulse(*mocks)`
+  - Method `.test_rampa_usa_peor_punto(*mocks)`
+  - Method `.test_rampa_descendente(*mocks)`
+  - Method `.test_valores_no_numericos(*mocks)`
+- `class TestSystemRefreshProbe` - *Nominal system refresh when calibration is not reliable.*
+  - Method `.test_lee_el_modo_marcado_como_actual()`
+  - Method `.test_sin_modo_actual_devuelve_none()`
+- `class TestVisualModeStart` - *Regression: start_visual_mode must start the scheduler.*
+  - Method `.setUp()`
+  - Method `.tearDown()`
+  - Method `.test_scheduler_arrancado_y_modo_activo()`
+  - Method `.test_modo_sigue_activo_tras_el_segundo_poll()`
+
+**Functions:**
+- `def patch_visual_ui_globals(func)` - *Parchea las variables de UI que lee get_visual_rate_request.*
 
 ---
 
