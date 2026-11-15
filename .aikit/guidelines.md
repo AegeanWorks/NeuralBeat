@@ -9,3 +9,4 @@ Persisted state carries a format version. A loader refuses a version it does not
 without modifying or quarantining that file; older versions migrate when a migration exists.
 
 ## Rules
+- **G-001** (user): Aesthetic, sleek, simplistic, minimalistic UI with refined modern styling, clean visual hierarchy, and uncluttered layout.
