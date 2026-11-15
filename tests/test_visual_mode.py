@@ -223,5 +223,107 @@ class TestVisualModeStart(unittest.TestCase):
         self.assertTrue(SourceCode.visual_mode_active)
 
 
+class TestWindowsProbeDispatch(unittest.TestCase):
+    """El sondeo nominal del sistema despacha por plataforma (PRINCIPLE-003).
+
+    En Windows nunca puede depender de xrandr: usa la API de pantalla.
+    """
+
+    XRANDR = (
+        "Screen 0: minimum 320 x 200, current 1366 x 768, maximum 8192 x 8192\n"
+        "eDP-1 connected primary 1366x768+0+0 (normal left inverted right x axis y axis) 344mm x 194mm\n"
+        "   1366x768      59.80*+\n"
+        "   1024x768      59.92  \n"
+    )
+
+    def test_en_windows_usa_el_helper_y_no_lanza_xrandr(self):
+        with patch('os.name', 'nt'), \
+                patch.object(SourceCode, '_windows_nominal_refresh_hz',
+                             return_value=59.94) as helper, \
+                patch('SourceCode.subprocess.run') as run_mock, \
+                patch.object(SourceCode, 'config', {}):
+            self.assertAlmostEqual(SourceCode.probe_system_refresh_hz(), 59.94)
+        helper.assert_called_once_with()
+        run_mock.assert_not_called()
+
+    def test_en_no_windows_sigue_usando_xrandr(self):
+        with patch('os.name', 'posix'), \
+                patch('SourceCode.subprocess') as sub, \
+                patch.object(SourceCode, 'config', {}):
+            sub.run.return_value.stdout = self.XRANDR
+            self.assertAlmostEqual(SourceCode.probe_system_refresh_hz(), 59.80)
+        sub.run.assert_called_once()
+
+
+class TestRevokeConsent(unittest.TestCase):
+    """El consentimiento fotosensible se puede revocar (auditoria, fix c)."""
+
+    def setUp(self):
+        self._config = SourceCode.config
+        SourceCode.config = {}
+        self.addCleanup(setattr, SourceCode, 'config', self._config)
+
+    def test_sin_consentimiento_guardado_no_pide_nada(self):
+        with patch.object(SourceCode, 'get_visual_settings', return_value={
+                'photosensitive_consent': False}), \
+                patch.object(SourceCode, 'save_config') as save_mock, \
+                patch('SourceCode.messagebox') as mb, \
+                patch.object(SourceCode, 'update_visual_button'):
+            SourceCode.revoke_photosensitive_consent()
+        save_mock.assert_not_called()
+        mb.askyesno.assert_not_called()
+        self.assertEqual(mb.showinfo.call_count, 1)
+
+    def test_con_consentimiento_confirma_y_guarda_false(self):
+        with patch.object(SourceCode, 'get_visual_settings', return_value={
+                'photosensitive_consent': True}), \
+                patch.object(SourceCode, 'save_config') as save_mock, \
+                patch('SourceCode.messagebox') as mb, \
+                patch.object(SourceCode, 'update_visual_button'):
+            mb.askyesno.return_value = True
+            SourceCode.revoke_photosensitive_consent()
+        mb.askyesno.assert_called_once()
+        self.assertIs(SourceCode.config['visual']['photosensitive_consent'],
+                      False)
+        save_mock.assert_called_once_with(SourceCode.config)
+
+    def test_con_consentimiento_cancelado_no_guarda_nada(self):
+        with patch.object(SourceCode, 'get_visual_settings', return_value={
+                'photosensitive_consent': True}), \
+                patch.object(SourceCode, 'save_config') as save_mock, \
+                patch('SourceCode.messagebox') as mb, \
+                patch.object(SourceCode, 'update_visual_button'):
+            mb.askyesno.return_value = False
+            SourceCode.revoke_photosensitive_consent()
+        save_mock.assert_not_called()
+
+
+class TestZeroRateGuidance(unittest.TestCase):
+    """Entradas frescas 432/432: guia neutra, no estado de error (fix d)."""
+
+    @patch_visual_ui_globals
+    def test_432_432_sin_arranque_muestra_guia_neutra(self, *mocks):
+        (ramp_minutes_entry, end_beat_entry, start_beat_entry,
+         right_frequency_entry, left_frequency_entry,
+         ramp_enabled_var, beat_type_var) = mocks
+        ramp_enabled_var.get.return_value = False
+        beat_type_var.get.return_value = "binaural"
+        left_frequency_entry.get.return_value = "432"
+        right_frequency_entry.get.return_value = "432"
+        start_beat_entry.get.return_value = ""
+        end_beat_entry.get.return_value = ""
+        with patch.object(SourceCode, 'config', {}), \
+                patch.object(SourceCode, 'save_config'), \
+                patch.object(SourceCode, 'visual_toggle_button') as vtb, \
+                patch.object(SourceCode, 'visual_status_label') as vsl:
+            SourceCode.update_visual_button()
+        label_text = ' '.join(str(c.kwargs.get('text', ''))
+                              for c in vsl.config.call_args_list)
+        self.assertIn('enter a beat frequency', label_text)
+        self.assertNotIn('invalid', label_text.lower())
+        for call in vtb.config.call_args_list:
+            self.assertNotIn('bootstyle', call.kwargs)
+
+
 if __name__ == '__main__':
     unittest.main()

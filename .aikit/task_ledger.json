@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794773970.7082486,
+    "updated_at": 1794774395.5992954,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,26 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:post-audit-hardening",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[5/5] CI workflow (windows-latest, pytest via requirements), tests landed first; UI surface cycle closed on clean baseline 67962ae via reviewed PrintWindow capture; check --strict: gates 4/4, tests 100 passed",
-      "files_affected": [
-        ".github/workflows/ci.yml"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794768958.1626444,
-      "timestamp_str": "2026-11-15 21:55:58",
-      "agent": "claude:node1",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:post-audit-hardening",
       "phase": "completed",
@@ -409,6 +389,26 @@
       "status": "in_progress",
       "timestamp": 1794773970.7082486,
       "timestamp_str": "2026-11-15 23:19:30",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:visual-audit-fixes",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] probe/revoke/zero-rate regression tests in tests/test_visual_mode.py; 166 passed",
+      "files_affected": [
+        "projects/NeuralBeat/tests/test_visual_mode.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794774395.5992954,
+      "timestamp_str": "2026-11-15 23:26:35",
       "agent": "claude:node1",
       "checklists": "passed",
       "workspaces": [
