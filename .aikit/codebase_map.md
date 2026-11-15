@@ -10,7 +10,7 @@
 - **Total Classes**: `59`
 - **Total Top-Level Functions**: `72`
 - **Total Class Methods**: `249`
-- **Total Source Lines**: `6719`
+- **Total Source Lines**: `6746`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`21` module(s))
@@ -36,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `2569` lines (`103267` bytes)
+**Size**: `2596` lines (`104540` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*

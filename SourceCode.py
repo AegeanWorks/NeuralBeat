@@ -84,6 +84,8 @@ visual_toggle_button = None
 visual_status_label = None
 visual_intensity_var = None
 visual_harmonics_var = None
+theme_menu_var = None
+osc_palette_var = None
 
 PHOTOSENSITIVE_WARNING = (
     "PHOTOSENSITIVE SAFETY WARNING\n\n"
@@ -1535,6 +1537,8 @@ def set_osc_colors(palette_name: str):
 
     config["osc_colors"] = palette_name
     save_config(config)
+    if osc_palette_var is not None:
+        osc_palette_var.set(palette_name)
 
     # If oscilloscope is open, update its colors in real-time
     if osc_window and visualizer_canvas and line_left and line_right:
@@ -1848,6 +1852,8 @@ def set_theme(theme_name: str):
         root.style.theme_use(theme_name)
         config["theme"] = theme_name
         save_config(config)
+        if theme_menu_var is not None:
+            theme_menu_var.set(theme_name)
     except Exception as e:
         messagebox.showerror("Theme Error", str(e))
 
@@ -1993,7 +1999,8 @@ def build_preset_buttons():
             text=p["label"],
             command=lambda l=p["left_hz"], r=p["right_hz"], c="Binaural": apply_preset(l, r, c)
         )
-        btn.grid(row=i, column=0, padx=10, pady=3, sticky="ew")
+        btn.grid(row=i, column=0, padx=10, pady=3, sticky="new")
+        binaural_monaural_frame.rowconfigure(i, weight=1)
 
     # Isochronic presets - use carrier_hz and pulse_hz
     for i, p in enumerate(allp["Isochronic"]):
@@ -2004,7 +2011,8 @@ def build_preset_buttons():
             text=p["label"],
             command=lambda c=carrier, pl=pulse: apply_preset(0, 0, "Isochronic", carrier_hz=c, pulse_hz=pl)
         )
-        btn.grid(row=i, column=0, padx=10, pady=3, sticky="ew")
+        btn.grid(row=i, column=0, padx=10, pady=3, sticky="new")
+        isochronic_beats_frame.rowconfigure(i, weight=1)
 
 def save_current_as_preset():
     try:
@@ -2176,24 +2184,25 @@ def create_frequency_control_frame(parent, title, column, waveform_options, defa
     frame.grid(row=0, column=column, padx=10, pady=10, sticky="nsew")
 
     freq_label = ttk.Label(frame, text="Frequency (Hz):")
-    freq_label.grid(row=0, column=0, padx=10, pady=5)
-    freq_entry = ttk.Entry(frame)
+    freq_label.grid(row=0, column=0, padx=10, pady=5, sticky="e")
+    freq_entry = ttk.Entry(frame, width=10)
     freq_entry.grid(row=0, column=1, padx=10, pady=5)
     freq_entry.insert(0, default_freq)
 
     vol_label = ttk.Label(frame, text="Volume (%):")
-    vol_label.grid(row=1, column=0, padx=10, pady=5)
-    vol_entry = ttk.Entry(frame)
+    vol_label.grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    vol_entry = ttk.Entry(frame, width=10)
     vol_entry.grid(row=1, column=1, padx=10, pady=5)
     vol_entry.insert(0, default_vol)
 
     waveform_label = ttk.Label(frame, text="Waveform:")
-    waveform_label.grid(row=2, column=0, padx=10, pady=5)
+    waveform_label.grid(row=2, column=0, padx=10, pady=5, sticky="e")
     waveform_var = tk.StringVar()
     waveform_combobox = ttk.Combobox(
         frame,
         textvariable=waveform_var,
-        values=waveform_options
+        values=waveform_options,
+        width=14
     )
     waveform_combobox.grid(row=2, column=1, padx=10, pady=5)
     waveform_combobox.set(default_waveform)
@@ -2210,7 +2219,7 @@ def main():
     global carrier_entry, start_beat_entry, end_beat_entry, ramp_minutes_entry, noise_type_var, noise_volume_entry
     global status_var, ramp_enabled_var, osc_merge_var, beat_type_var
     global visual_toggle_button, visual_status_label, visual_intensity_var
-    global visual_harmonics_var
+    global visual_harmonics_var, theme_menu_var, osc_palette_var
 
     import sys
     if "--debug" in sys.argv:
@@ -2294,6 +2303,16 @@ def main():
     
     root.protocol("WM_DELETE_WINDOW", on_close)
 
+    # Makes maximizing work: the presets column gets extra width and the
+    # height is absorbed by the presets/editor rows that use sticky="nsew".
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=1)
+    root.columnconfigure(2, weight=2)
+    root.rowconfigure(2, weight=1)
+    root.minsize(1000, 640)
+
+    root.style.configure("Status.TLabel", font=("Segoe UI", 10))
+
     osc_merge_var = tk.BooleanVar(value=config.get("osc_merge_waves", False))
     status_var = tk.StringVar(value="Beat: — Hz | L: — Hz | R: — Hz")
 
@@ -2302,7 +2321,6 @@ def main():
 
     settings_menu = tk.Menu(menu_bar, tearoff=False)
     menu_bar.add_cascade(label="Settings", menu=settings_menu)
-    settings_menu.add_command(label="About", command=show_about)
 
     user_profile_menu = tk.Menu(settings_menu, tearoff=False)
     settings_menu.add_cascade(label="User Profile", menu=user_profile_menu)
@@ -2311,9 +2329,16 @@ def main():
 
     theme_menu = tk.Menu(settings_menu, tearoff=False)
     settings_menu.add_cascade(label="Theme", menu=theme_menu)
-    theme_menu.add_command(label="Dark (Darkly)", command=lambda: set_theme("darkly"))
-    theme_menu.add_command(label="Dark (Superhero)", command=lambda: set_theme("superhero"))
-    theme_menu.add_command(label="Light (Flatly)", command=lambda: set_theme("flatly"))
+    theme_menu_var = tk.StringVar(value=config.get("theme", initial_theme))
+    theme_menu.add_radiobutton(
+        label="Dark (Darkly)", variable=theme_menu_var, value="darkly",
+        command=lambda: set_theme("darkly"))
+    theme_menu.add_radiobutton(
+        label="Dark (Superhero)", variable=theme_menu_var, value="superhero",
+        command=lambda: set_theme("superhero"))
+    theme_menu.add_radiobutton(
+        label="Light (Flatly)", variable=theme_menu_var, value="flatly",
+        command=lambda: set_theme("flatly"))
 
     settings_menu.add_separator()
 
@@ -2323,8 +2348,12 @@ def main():
     osc_menu.add_separator()
     color_menu = tk.Menu(osc_menu, tearoff=False)
     osc_menu.add_cascade(label="Line Colors", menu=color_menu)
+    osc_palette_var = tk.StringVar(
+        value=config.get("osc_colors", next(iter(OSC_COLOR_PALETTES))))
     for name in OSC_COLOR_PALETTES:
-        color_menu.add_command(label=name, command=lambda n=name: set_osc_colors(n))
+        color_menu.add_radiobutton(
+            label=name, variable=osc_palette_var, value=name,
+            command=lambda n=name: set_osc_colors(n))
 
     osc_menu.add_separator()
     osc_menu.add_checkbutton(label="Merge Waves", variable=osc_merge_var, command=set_osc_merge_waves)
@@ -2355,8 +2384,11 @@ def main():
         label="Revoke photosensitive consent",
         command=revoke_photosensitive_consent)
 
-    beat_type_var = tk.StringVar(value="binaural")
+    help_menu = tk.Menu(menu_bar, tearoff=False)
+    menu_bar.add_cascade(label="Help", menu=help_menu)
+    help_menu.add_command(label="About", command=show_about)
 
+    beat_type_var = tk.StringVar(value="binaural")
     left_frequency_entry, left_volume_entry, left_waveform_var, left_waveform_combobox, left_freq_label, left_vol_label, left_waveform_lbl, left_freq_frame = create_frequency_control_frame(
         root, "Left Ear Frequency", 0, list(waveforms.keys()), default_freq="432", default_vol="50", default_waveform="Sine"
     )
@@ -2442,11 +2474,8 @@ def main():
     advanced_controls_frame.columnconfigure(2, weight=1)
 
     # --- Beat Type selector ---
-    beat_type_container = ttk.Frame(advanced_controls_frame)
-    beat_type_container.grid(row=0, column=0, columnspan=3, pady=4)
-    
-    beat_type_subsection = ttk.LabelFrame(beat_type_container, text="Beat Type")
-    beat_type_subsection.pack()
+    beat_type_subsection = ttk.LabelFrame(advanced_controls_frame, text="Beat Type")
+    beat_type_subsection.grid(row=0, column=0, columnspan=3, pady=4, sticky="w")
     beat_type_subsection.columnconfigure(0, weight=1)
     beat_type_subsection.columnconfigure(1, weight=1)
 
@@ -2454,15 +2483,11 @@ def main():
     ttk.Radiobutton(beat_type_subsection, text="Isochronic Tone", variable=beat_type_var, value="isochronic").grid(row=0, column=1, padx=10, pady=5)
 
     # --- Subsections within the main ramp frame ---
-    noise_container = ttk.Frame(advanced_controls_frame)
-    noise_container.grid(row=1, column=0, columnspan=3, pady=4)
-    noise_subsection_frame = ttk.LabelFrame(noise_container, text="Background Noise")
-    noise_subsection_frame.pack()
+    noise_subsection_frame = ttk.LabelFrame(advanced_controls_frame, text="Background Noise")
+    noise_subsection_frame.grid(row=1, column=0, columnspan=3, pady=4, sticky="w")
 
-    ramp_container = ttk.Frame(advanced_controls_frame)
-    ramp_container.grid(row=2, column=0, columnspan=3, pady=4)
-    ramp_subsection_frame = ttk.LabelFrame(ramp_container, text="Ramp Settings")
-    ramp_subsection_frame.pack()
+    ramp_subsection_frame = ttk.LabelFrame(advanced_controls_frame, text="Ramp Settings")
+    ramp_subsection_frame.grid(row=2, column=0, columnspan=3, pady=4, sticky="w")
 
     # --- Populate Background Noise subsection ---
     noise_type_label = ttk.Label(noise_subsection_frame, text="Noise Type:")
@@ -2528,10 +2553,12 @@ def main():
     generate_button = ttk.Button(bottom_frame, text="Generate Beat", command=play_audio)
     generate_button.grid(row=0, column=0, sticky="e", padx=20)
 
-    status_label = ttk.Label(bottom_frame, textvariable=status_var, anchor="center")
+    status_label = ttk.Label(bottom_frame, textvariable=status_var,
+                             anchor="center", style="Status.TLabel")
     status_label.grid(row=0, column=1, sticky="ew")
 
-    stop_button = ttk.Button(bottom_frame, text="Stop", command=stop_audio)
+    stop_button = ttk.Button(bottom_frame, text="Stop", width=14,
+                             command=stop_audio)
     stop_button.grid(row=0, column=2, sticky="w", padx=20)
 
     # --- Visual mode (strobe): its own row in the bottom bar ---
@@ -2541,17 +2568,17 @@ def main():
     visual_toggle_button = tb.Button(
         bottom_frame, text="Visual mode", command=toggle_visual_mode,
         bootstyle="secondary")
-    visual_toggle_button.grid(row=1, column=0, sticky="e", padx=20, pady=(0, 4))
+    visual_toggle_button.grid(row=1, column=0, sticky="e", padx=20, pady=(10, 4))
 
     visual_status_label = ttk.Label(
         bottom_frame, text="Visual: -", anchor="center", justify="center",
-        wraplength=640)
-    visual_status_label.grid(row=1, column=1, sticky="ew", pady=(0, 4))
+        wraplength=640, style="Status.TLabel")
+    visual_status_label.grid(row=1, column=1, sticky="ew", pady=(10, 4))
 
     visual_disclaimer_label = ttk.Label(
         bottom_frame, text="Not a medical device or treatment.",
         anchor="e")
-    visual_disclaimer_label.grid(row=1, column=2, sticky="e", padx=20, pady=(0, 4))
+    visual_disclaimer_label.grid(row=1, column=2, sticky="e", padx=20, pady=(10, 4))
 
     # The gate state is recomputed when rhythm, category or ramp changes
     beat_type_var.trace_add("write", lambda *a: update_visual_button())
