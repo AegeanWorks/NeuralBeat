@@ -17,5 +17,24 @@
     "final_snapshot_digest": "",
     "final_snapshot_entries": 0,
     "surface_digest": "79912bed12f0e224d572881b9a8d1b8c185f70b34480a2be2266ec1cb6752bab"
+  },
+  {
+    "schema": 1,
+    "surface": "app",
+    "mode": "visual",
+    "visual_change": true,
+    "changed_paths": [],
+    "no_visual_reason": "",
+    "no_change_reason": "running main window re-captured via PrintWindow (1109x596, all panels render, layout unchanged by hardening commit 67962ae); reviewed the cancellation/quarantine/label diffs and their 100 passing tests",
+    "baseline_commit": "67962ae78ca7992369d05cc12cc31fff18fe4c02",
+    "contract_hash": "68a10fc78336e4c0ac11d6154f2b819baefdbe517a4234a7bb06f0d75ae93885",
+    "started_at": 1794768887.7315564,
+    "finished_at": 1794768933.2774348,
+    "strikes": 0,
+    "reviewer": "claude:node1",
+    "allowed_removals": [],
+    "final_snapshot_digest": "",
+    "final_snapshot_entries": 0,
+    "surface_digest": "c8402a0c07ab54c7fcd83a4c83931aad194cd865acf2caa1161820422e71c10b"
   }
 ]

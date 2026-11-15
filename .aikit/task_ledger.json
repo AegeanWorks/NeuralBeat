@@ -2,10 +2,10 @@
   "version": 1,
   "active_task": {
     "task_id": "neuralbeat:post-audit-hardening",
-    "last_phase": "phase 3",
-    "active_phase": 3,
-    "status": "in_progress",
-    "updated_at": 1794768702.2635722,
+    "last_phase": "phase 4",
+    "active_phase": 5,
+    "status": "completed",
+    "updated_at": 1794768958.1626444,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -14,33 +14,12 @@
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ]
+    ],
+    "completed_at": 1794768958.5695524,
+    "completed_head": "67962ae78ca7992369d05cc12cc31fff18fe4c02",
+    "completed_tree": "bd3ff23de40a6d0ca09539a6ec79bf22ba3da435"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 38",
-      "phase_num": 3,
-      "description": "Reforge stage 38: stage 38 host review reviewed; run active; coverage 2/2",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456630.0346363,
-      "timestamp_str": "2026-10-31 17:23:50",
-      "agent": "github"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 39",
-      "phase_num": 3,
-      "description": "Reforge stage 39: window 117, 3 commit(s), 1 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, 1 binary not analysed",
-      "files_affected": [
-        "banner.png"
-      ],
-      "status": "in_progress",
-      "timestamp": 1793456640.8797524,
-      "timestamp_str": "2026-10-31 17:24:00",
-      "agent": "github"
-    },
     {
       "task_id": "reforge:run-7",
       "phase": "reforge stage 39",
@@ -303,6 +282,42 @@
           "path": "projects/NeuralBeat"
         }
       ]
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[5/5] CI workflow (windows-latest, pytest via requirements), tests landed first; UI surface cycle closed on clean baseline 67962ae via reviewed PrintWindow capture; check --strict: gates 4/4, tests 100 passed",
+      "files_affected": [
+        ".github/workflows/ci.yml"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794768958.1626444,
+      "timestamp_str": "2026-11-15 21:55:58",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'neuralbeat:post-audit-hardening' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794768958.6142519,
+      "timestamp_str": "2026-11-15 21:55:58",
+      "agent": "claude:node1",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
