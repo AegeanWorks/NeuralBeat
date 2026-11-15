@@ -7,10 +7,10 @@
 
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `17`
-- **Total Classes**: `31`
-- **Total Top-Level Functions**: `36`
-- **Total Class Methods**: `142`
-- **Total Source Lines**: `4129`
+- **Total Classes**: `36`
+- **Total Top-Level Functions**: `38`
+- **Total Class Methods**: `157`
+- **Total Source Lines**: `4357`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`17` module(s))
@@ -36,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `1806` lines (`71770` bytes)
+**Size**: `1838` lines (`73333` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -60,6 +60,8 @@
   - Method `.get_last_block()`
 
 **Functions:**
+- `def is_combined_beat_label(category)` - *True when the label carries both beat words (combined UI label).*
+- `def _quarantine_corrupt_config()` - *Moves an unparsable config file aside so a later save can recreate it.*
 - `def load_config()` - *Loads configuration from the JSON file.*
 - `def save_config(cfg)` - *Saves the configuration dictionary to the JSON file.*
 - `def _normalize_category(category)`
@@ -75,7 +77,7 @@
 - `def set_osc_merge_waves()` - *Saves the merge waves setting and updates the live plot's static elements.*
 - `def set_osc_colors(palette_name)` - *Sets the oscilloscope color palette and saves to config.*
 - `def toggle_oscilloscope_window()` - *Opens or closes the real-time oscilloscope window.*
-- `def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error)` - *Background thread function for exporting audio to a WAV file.*
+- `def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error, cancel_event)` - *Background thread function for exporting audio to a WAV file.*
 - `def export_audio_file()` - *Initiates the audio export process with UI dialogs.*
 - `def play_audio()` - *Starts audio playback based on current UI settings.*
 - `def show_about()`
@@ -297,7 +299,7 @@
 ### [`tests/test_ui_logic.py`](tests/test_ui_logic.py)
 > *Test UI logic functions from SourceCode.py that don't require a live UI.*
 
-**Size**: `240` lines (`10044` bytes)
+**Size**: `358` lines (`15723` bytes)
 
 **Classes:**
 - `class TestUiLogic` - *Test UI-related logic functions.*
@@ -307,6 +309,17 @@
   - Method `.test_get_audio_config_out_of_range(*mocks)` - *Test get_audio_config_from_ui with out-of-range frequency.*
   - Method `.test_build_preset_buttons(mock_apply_preset)` - *Test that preset buttons are created with the correct commands.*
   - Method `.test_apply_preset()` - *Test that apply_preset correctly updates the UI entries.*
+- `class TestRampAndNoiseBoundaries` - *Boundary coverage for the ramp and noise validation rules.*
+  - Method `._assert_ramp_error(*mocks, ramp_minutes, carrier, start, end, beat_type, noise, pattern)`
+  - Method `.test_ramp_duration_below_minimum_rejected(*mocks)`
+  - Method `.test_ramp_duration_above_maximum_rejected(*mocks)`
+  - Method `.test_ramp_carrier_audibility_below_bound_rejected(*mocks)`
+  - Method `.test_ramp_carrier_audibility_at_bound_accepted(*mocks)`
+  - Method `.test_noise_volume_out_of_range_rejected(*mocks)`
+- `class TestPresetAutoSplit`
+  - Method `._patch_preset_entries(stack, label, category)`
+  - Method `.test_save_preset_auto_splits_combo_label(mock_add, *_)`
+  - Method `.test_save_preset_split_monaural_on_equal_frequencies(mock_add, *_)`
 
 **Functions:**
 - `def patch_ui_globals(func)` - *Patch every UI global and pass the mocks in the order the tests unpack them.*
@@ -332,7 +345,7 @@
 ### [`tests/test_verify_fixes.py`](tests/test_verify_fixes.py)
 > *Regression tests for verify/analyze fixes (export routing, pulse continuity, config).*
 
-**Size**: `137` lines (`5590` bytes)
+**Size**: `215` lines (`9464` bytes)
 
 **Classes:**
 - `class TestExportRouting`
@@ -344,6 +357,15 @@
 - `class TestConfigRobustness`
   - Method `.test_load_config_rejects_list_root()`
   - Method `.test_import_rejects_bad_theme()`
+- `class TestCombinedLabelHelper`
+  - Method `.test_combined_label_helper()`
+  - Method `.test_export_duration_constants_shared()`
+- `class TestExportCancellation`
+  - Method `.test_cancelled_export_writes_nothing()`
+  - Method `.test_uncancelled_export_writes_file()`
+- `class TestConfigQuarantine`
+  - Method `.test_corrupt_config_is_quarantined()`
+  - Method `.test_valid_config_is_not_quarantined()`
 
 ---
 

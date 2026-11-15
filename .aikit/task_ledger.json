@@ -1,77 +1,22 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "neuralbeat:waves-0-30",
-    "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1794768146.4858744,
+    "task_id": "neuralbeat:post-audit-hardening",
+    "last_phase": "phase 3",
+    "active_phase": 3,
+    "status": "in_progress",
+    "updated_at": 1794768702.2635722,
     "owner": "claude:node1",
-    "started_by": "kilo:neuralbeat-audit",
-    "continuations": [
-      {
-        "agent": "claude:node1",
-        "from": "kilo:neuralbeat-audit",
-        "at": 1794768146.4858744
-      }
-    ],
+    "started_by": "claude:node1",
+    "continuations": [],
     "workspaces": [
       {
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ],
-    "completed_at": 1794768146.9179637,
-    "completed_head": "ffec710deccbd15664152e773ae1b15f2be65e58",
-    "completed_tree": "20a02f281242a1e57f20d34579d9adaeb5a9d4fc"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 36",
-      "phase_num": 3,
-      "description": "Reforge stage 36: stage 36 host review reviewed; run active; coverage 10/10",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456601.7740831,
-      "timestamp_str": "2026-10-31 17:23:21",
-      "agent": "github"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 37",
-      "phase_num": 3,
-      "description": "Reforge stage 37: window 111, 3 commit(s), 2 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456617.5917854,
-      "timestamp_str": "2026-10-31 17:23:37",
-      "agent": "github"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 37",
-      "phase_num": 3,
-      "description": "Reforge stage 37: stage 37 host review reviewed; run active; coverage 7/7",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456618.3559813,
-      "timestamp_str": "2026-10-31 17:23:38",
-      "agent": "github"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 38",
-      "phase_num": 3,
-      "description": "Reforge stage 38: window 114, 3 commit(s), 1 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, 1 binary not analysed",
-      "files_affected": [
-        "logo.png"
-      ],
-      "status": "in_progress",
-      "timestamp": 1793456629.1575735,
-      "timestamp_str": "2026-10-31 17:23:49",
-      "agent": "github"
-    },
     {
       "task_id": "reforge:run-7",
       "phase": "reforge stage 38",
@@ -273,6 +218,91 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/5] Plan: harden post-audit code \u2014 combined-label helper, duration policy constants, export cancellation, corrupt-config quarantine, boundary tests, CI workflow",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794768444.49455,
+      "timestamp_str": "2026-11-15 21:47:24",
+      "agent": "claude:node1",
+      "impact_assessment": {
+        "why": "Post-delivery analysis of HEAD found acknowledged-but-unimplemented gaps (cancel-event comment in export loop), duplicated combined-label logic at 3 call sites, two disagreeing duration policies, silent loss of corrupt config, and missing boundary tests for rules added in 510d2da",
+        "benefits": "Single source of truth for category labels and duration bounds; exports no longer outlive the app or produce unrequested files; corrupt config preserved for recovery; new validation rules regression-protected; CI runs the 4s suite on every push",
+        "risks": "contract: _run_export_thread gains optional cancel_event param, callers checked (1 site) -- no other consumers; dependency: CI installs requirements.txt pinned already -- no new deps; concurrency: cancel event set from Tk main thread while export thread polls -- threading.Event is the safe primitive, file write happens once after loop; state: quarantine renames a corrupt config to .corrupt -- never overwrites an existing quarantine without timestamp; tests must not spawn audio threads (sounddevice mocked/stubbed as in existing suite)",
+        "mitigation": "Failing-first tests before each behavior change; keep UI-layer reject and thread clamp aligned via shared constants; cancellation only stops file writing, no partial WAV; quarantine uses timestamped suffix; CI workflow uses windows-latest to match the desktop target"
+      },
+      "plan_digest": "f3cbcdc332cd405b3abb8ec5897fde98fee3ec19c788709884aa62a4f667c03a",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/5] Added is_combined_beat_label helper; used at _normalize_category, save_current_as_preset, delete_preset; EXPORT_MIN/MAX_DURATION_S constants shared by UI validation and thread clamp; failing-first tests for helper and constants",
+      "files_affected": [
+        "SourceCode.py",
+        "tests/test_verify_fixes.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794768549.961328,
+      "timestamp_str": "2026-11-15 21:49:09",
+      "agent": "claude:node1",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/5] Export cancellation: export_cancel_event cleared on new export, set by on_close; _run_export_thread takes optional cancel_event, cancelled exports write no file and fire no callback; failing-first tests cover both cancel paths; suite 91 passed",
+      "files_affected": [
+        "SourceCode.py",
+        "tests/test_verify_fixes.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794768550.550882,
+      "timestamp_str": "2026-11-15 21:49:10",
+      "agent": "claude:node1",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:post-audit-hardening",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[4/5] Corrupt-config quarantine: JSONDecodeError renames config.json to .corrupt (timestamped when taken) instead of silent overwrite; boundary tests added for ramp 0.5-120min, carrier audibility >=20Hz, noise volume, preset auto-split; suite 100 passed",
+      "files_affected": [
+        "SourceCode.py",
+        "tests/test_verify_fixes.py",
+        "tests/test_ui_logic.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794768702.2635722,
+      "timestamp_str": "2026-11-15 21:51:42",
+      "agent": "claude:node1",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
     }
   ]
 }
