@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794771502.0008154,
+    "updated_at": 1794771822.5961094,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,24 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:waves-0-30",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/4] Wave audit plan: survey first-30 commits in waves 0,10,20,30; verify by quote/measure; analyze surviving defects; minimal failing-first fix",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793722855.9373705,
-      "timestamp_str": "2026-11-03 19:20:55",
-      "agent": "kilo:neuralbeat-audit",
-      "impact_assessment": {
-        "why": "First-30 history holds config import/export lineage (v0.8.1) still live at HEAD; unrepaired round-trip loss affects user profiles",
-        "benefits": "Evidence-backed audit with no unverified claims; one minimal repair with regression lock",
-        "risks": "contract: config schema; dependency: none new; concurrency: none; state: user config.json",
-        "mitigation": "Mocked unit test, no audio/hardware, explicit staging, no push"
-      },
-      "plan_digest": "ef029e8c6f1326571e95e1f9e187c80b50a16e3cbd6d2664b2bd1f2cf59d905d"
-    },
     {
       "task_id": "neuralbeat:waves-0-30",
       "phase": "phase 4",
@@ -398,6 +380,27 @@
       "timestamp": 1794771502.0008154,
       "timestamp_str": "2026-11-15 22:38:22",
       "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[3/6] cycle B: update_visual_button, toggle_visual_mode (consent + calibration offer + substitute/harmonic fallback), set_visual_intensity, on_visual_harmonics_toggle - all strings English; dropped fork runtime bootstyle restyle (violates our bootstyle shield), states carried by button text. checklists: passed",
+      "files_affected": [
+        "SourceCode.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794771822.5961094,
+      "timestamp_str": "2026-11-15 22:43:42",
+      "agent": "claude:node1",
+      "head": "6df8370ae9ab0f4d42e51d38c28a2d0b9e2b0da6",
       "checklists": "passed",
       "workspaces": [
         {

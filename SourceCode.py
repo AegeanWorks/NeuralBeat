@@ -85,13 +85,6 @@ visual_status_label = None
 visual_intensity_var = None
 visual_harmonics_var = None
 
-STATE_BOOTSTYLES = {
-    "exacto": "success",
-    "aproximado": "warning",
-    "armonico": "info",
-    "no_disponible": "danger",
-}
-
 PHOTOSENSITIVE_WARNING = (
     "PHOTOSENSITIVE SAFETY WARNING\n\n"
     "Visual mode produces full-screen light flashes.\n"
@@ -976,6 +969,140 @@ def compute_visual_capability():
     else:
         cap = visual.visual_capability(req["rate_hz"], refresh, harmonics)
     return req, cap
+
+
+def update_visual_button():
+    """Visible state of the Visual mode button: exact / approximate / harmonic
+    / unavailable plus reason and power feedback (honest gate)."""
+    global visual_last_reason
+    if visual_toggle_button is None or visual_status_label is None:
+        return
+    if visual_mode_active:
+        try:
+            visual_toggle_button.config(text="Close visual mode")
+        except Exception:
+            visual_toggle_button.config(text="Close visual mode")
+        visual_status_label.config(
+            text=visual_active_status or
+            "Visual mode active - exit with any key")
+        return
+    try:
+        req, cap = compute_visual_capability()
+    except (ValueError, TypeError):
+        try:
+            visual_toggle_button.config(text="Visual mode")
+        except Exception:
+            visual_toggle_button.config(text="Visual mode")
+        visual_status_label.config(text="Visual mode: enter a valid rate")
+        return
+    label = visual.capability_label(cap, req["rate_hz"])
+    if req["mode"] == "ramp":
+        label += " - gated at the worst sweep point"
+    note = visual.intensity_note(get_visual_settings()["intensity"])
+    if visual_last_reason:
+        note = f"{visual_last_reason} - {note}"
+        visual_last_reason = None
+    state_txt = cap.state.replace("_", " ")
+    try:
+        visual_toggle_button.config(text=f"Visual mode - {state_txt}")
+    except Exception:
+        visual_toggle_button.config(text=f"Visual mode - {state_txt}")
+    visual_status_label.config(text=f"Visual: {label} - {note}")
+
+
+def toggle_visual_mode():
+    """Visual mode button action: gate + consent + start-up.
+
+    Never auto-starts: only from this explicit user action.
+    """
+    if visual_mode_active:
+        close_visual_mode()
+        return
+    if not audio_engine.is_playing:
+        # Spec: without playing audio it does not start and explains why
+        messagebox.showinfo(
+            "Visual mode",
+            "Visual mode can only open while audio is playing.\n"
+            "Press 'Generate Beat' first.")
+        return
+    settings = get_visual_settings()
+    if not settings["photosensitive_consent"]:
+        if not messagebox.askyesno("Photosensitivity warning",
+                                   PHOTOSENSITIVE_WARNING):
+            return
+        save_visual_setting("photosensitive_consent", True)
+    if not settings["refresh_hz"]:
+        if messagebox.askyesno(
+                "Screen calibration",
+                "There is no saved screen calibration. Visual mode measures "
+                "the real refresh rate of your screen to honestly decide "
+                "which rhythms it can emit.\n\nCalibrate now? (~2s "
+                "full-screen)"):
+            run_screen_calibration()
+    try:
+        req, cap = compute_visual_capability()
+    except (ValueError, TypeError) as e:
+        messagebox.showerror("Visual mode", str(e))
+        return
+    if not cap.available:
+        refresh = get_visual_refresh_hz()
+        substitute = visual.best_substitute(refresh)
+        harmonics_on = get_visual_settings()["harmonics_enabled"]
+        harmonic = (visual.harmonic_candidate(req["rate_hz"], refresh)
+                    if harmonics_on else None)
+        msg = (
+            f"The requested rhythm ({req['rate_hz']:.2f} Hz) cannot be "
+            f"emitted on this screen.\n\nReason: {cap.reason}\n\n"
+            f"Alternative: use the highest exact rate your screen supports, "
+            f"{substitute.effective_hz:.2f} Hz - a DIFFERENT frequency than "
+            f"the requested one.")
+        if harmonic is not None:
+            msg += (f"\n\nExperimental: harmonic ~{harmonic.harmonic_of_hz:.2f} Hz "
+                    f"(pulses at {harmonic.effective_hz:.2f} Hz, lower power).")
+            reply = messagebox.askyesnocancel(
+                "Visual mode unavailable",
+                msg + "\n\n[Yes] substitute - [No] harmonic - [Cancel] do not start")
+            if reply is None:
+                return
+            cap = substitute if reply else harmonic
+        else:
+            if not messagebox.askyesno("Visual mode unavailable", msg):
+                return
+            cap = substitute
+    start_visual_mode(cap, req)
+
+
+def set_visual_intensity():
+    """Comfy intensity (default) or bright (opt-in, with a warning)."""
+    intensity = visual_intensity_var.get() if visual_intensity_var else "comoda"
+    if intensity == "brillante":
+        messagebox.showwarning(
+            "Bright intensity",
+            "You chose bright intensity: the strobe will use maximum "
+            "contrast (pure black / white).\n\nThe higher contrast means a "
+            "stronger expected visual response and more intense stimulation. "
+            "At any discomfort, exit with any key and return to the comfy "
+            "intensity.")
+    save_visual_setting(
+        "intensity", intensity if intensity in visual.INTENSITY_PAIRS else "comoda")
+    update_visual_button()
+
+
+def on_visual_harmonics_toggle():
+    """Advanced flag of the experimental harmonic mode (off by default)."""
+    enabled = bool(visual_harmonics_var.get()) if visual_harmonics_var else False
+    save_visual_setting("harmonics_enabled", enabled)
+    if enabled:
+        messagebox.showinfo(
+            "Experimental harmonic mode",
+            "The EXPERIMENTAL harmonic mode is enabled.\n\nWhen the requested "
+            "rhythm is unavailable on your screen, a pattern at an integer "
+            "divisor of the refresh whose 2nd harmonic approximates the "
+            "requested rhythm may be offered (e.g. 40 Hz requested on a ~60 "
+            "Hz screen: pulses at ~19.93 Hz with the 2nd harmonic at ~39.87 "
+            "Hz).\n\nIt delivers LESS power than the requested frequency and "
+            "adds a component at the fundamental frequency.")
+    update_visual_button()
 
 
 # =============================================================================
