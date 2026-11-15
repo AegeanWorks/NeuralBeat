@@ -896,11 +896,14 @@ def get_visual_refresh_hz() -> float:
 
 
 def probe_system_refresh_hz():
-    """Nominal refresh reported by the system (xrandr). None when unavailable.
+    """Nominal refresh reported by the system. None when unavailable.
 
     Not a measurement: it only avoids the 60 Hz default when real calibration
-    is unreliable (e.g. a compositor that ignores deadlines).
+    is unreliable (e.g. a compositor that ignores deadlines). Windows uses the
+    display API; Linux/X11 uses xrandr.
     """
+    if os.name == "nt":
+        return _windows_nominal_refresh_hz()
     try:
         out = subprocess.run(["xrandr", "--current"], capture_output=True,
                              text=True, timeout=3.0).stdout
@@ -908,6 +911,71 @@ def probe_system_refresh_hz():
         logger.info("No xrandr available for the system refresh", exc_info=True)
         return None
     return visual.parse_xrandr_refresh_hz(out)
+
+
+def _windows_nominal_refresh_hz():
+    """Nominal refresh (Hz) of the primary display via the Win32 API.
+
+    Same caveat as the xrandr path: it is not a measurement. Returns None
+    when the API reports nothing usable (failure or frequency 0).
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _DevModeUnion(ctypes.Union):
+            _fields_ = [("dmPosition", wintypes.POINTL),
+                        ("dmDisplayOrientation", wintypes.DWORD),
+                        ("dmDisplayFixedOutput", wintypes.DWORD)]
+
+        class _DevModeW(ctypes.Structure):
+            _fields_ = [
+                ("dmDeviceName", wintypes.WCHAR * 32),
+                ("dmSpecVersion", wintypes.WORD),
+                ("dmDriverVersion", wintypes.WORD),
+                ("dmSize", wintypes.WORD),
+                ("dmDriverExtra", wintypes.WORD),
+                ("dmFields", wintypes.DWORD),
+                ("u1", _DevModeUnion),
+                ("dmColor", wintypes.SHORT),
+                ("dmDuplex", wintypes.SHORT),
+                ("dmYResolution", wintypes.SHORT),
+                ("dmTTOption", wintypes.SHORT),
+                ("dmCollate", wintypes.SHORT),
+                ("dmFormName", wintypes.WCHAR * 32),
+                ("dmLogPixels", wintypes.WORD),
+                ("dmBitsPerPel", wintypes.DWORD),
+                ("dmPelsWidth", wintypes.DWORD),
+                ("dmPelsHeight", wintypes.DWORD),
+                ("dmDisplayFlags", wintypes.DWORD),
+                ("dmDisplayFrequency", wintypes.DWORD),
+                ("dmICMMethod", wintypes.DWORD),
+                ("dmICMIntent", wintypes.DWORD),
+                ("dmMediaType", wintypes.DWORD),
+                ("dmDitherType", wintypes.DWORD),
+                ("dmReserved1", wintypes.DWORD),
+                ("dmReserved2", wintypes.DWORD),
+                ("dmPanningWidth", wintypes.DWORD),
+                ("dmPanningHeight", wintypes.DWORD),
+            ]
+
+        dm = _DevModeW()
+        dm.dmSize = ctypes.sizeof(_DevModeW)
+        ENUM_CURRENT_SETTINGS = 0xFFFFFFFF  # DWORD -1
+        user32 = ctypes.windll.user32
+        if not user32.EnumDisplaySettingsW(None, ENUM_CURRENT_SETTINGS,
+                                           ctypes.byref(dm)):
+            return None
+        freq = float(dm.dmDisplayFrequency)
+        if freq <= 0:
+            return None
+        # Round-trips like 59.94/29.97 are reported as integers on some
+        # drivers; accept whatever the driver reports, plausibility is
+        # enforced by visual.merge_visual_config on read.
+        return freq
+    except Exception:
+        logger.info("Windows refresh probe failed", exc_info=True)
+        return None
 
 
 def get_visual_rate_request() -> dict:
@@ -998,6 +1066,15 @@ def update_visual_button():
         except Exception:
             visual_toggle_button.config(text="Visual mode")
         visual_status_label.config(text="Visual mode: enter a valid rate")
+        return
+    if not req["rate_hz"]:
+        # Fresh 432/432 entries: no beat yet - guide instead of gate-error.
+        try:
+            visual_toggle_button.config(text="Visual mode")
+        except Exception:
+            visual_toggle_button.config(text="Visual mode")
+        visual_status_label.config(
+            text="Visual: enter a beat frequency to enable the strobe")
         return
     label = visual.capability_label(cap, req["rate_hz"])
     if req["mode"] == "ramp":
@@ -1090,6 +1167,26 @@ def set_visual_intensity():
     save_visual_setting(
         "intensity", intensity if intensity in visual.INTENSITY_PAIRS else "comoda")
     update_visual_button()
+
+
+def revoke_photosensitive_consent():
+    """Clear the stored photosensitive consent so the strobe asks again."""
+    if not get_visual_settings().get("photosensitive_consent"):
+        messagebox.showinfo(
+            "Revoke consent",
+            "There is no stored photosensitive consent to revoke.")
+        return
+    if not messagebox.askyesno(
+            "Revoke photosensitive consent",
+            "This clears the stored consent and disables the visual strobe "
+            "until you grant it again.\n\nRevoke the photosensitive consent?"):
+        return
+    save_visual_setting("photosensitive_consent", False)
+    update_visual_button()
+    messagebox.showinfo(
+        "Revoke consent",
+        "Photosensitive consent revoked. The visual strobe will ask for "
+        "consent again before it can be used.")
 
 
 def on_visual_harmonics_toggle():
@@ -2253,6 +2350,10 @@ def main():
     visual_settings_menu.add_checkbutton(
         label="Experimental harmonic mode (advanced)",
         variable=visual_harmonics_var, command=on_visual_harmonics_toggle)
+    visual_settings_menu.add_separator()
+    visual_settings_menu.add_command(
+        label="Revoke photosensitive consent",
+        command=revoke_photosensitive_consent)
 
     beat_type_var = tk.StringVar(value="binaural")
 

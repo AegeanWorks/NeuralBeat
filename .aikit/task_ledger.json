@@ -2,10 +2,10 @@
   "version": 1,
   "active_task": {
     "task_id": "neuralbeat:visual-audit-fixes",
-    "last_phase": "phase 2",
-    "active_phase": 2,
+    "last_phase": "phase 4",
+    "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794773467.9707963,
+    "updated_at": 1794773970.7082486,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -14,36 +14,9 @@
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ],
-    "impact_assessment": {
-      "why": "Audit of the 21 unpushed commits found a read-side validation gap and platform gaps in the freshly adopted strobe feature",
-      "benefits": "Corrupt/hostile config cannot distort strobe timing; Windows users get a real fallback refresh; users can withdraw consent once given; first launch shows guidance instead of an error state",
-      "risks": "contract: probe refactor changes probe_system_refresh_hz behavior per-OS - both branches keep None-on-failure semantics; dependency: ctypes/wintypes stdlib only, imported lazily inside the Windows branch; concurrency: none (menu handler, label update on Tk thread); state: consent revocation persists to config visual section via existing save_visual_setting",
-      "mitigation": "Pure read-side change in visual.py with merge-level tests; SourceCode changes behind one ui cycle with pixel-diff review; revoke only touches one scalar and asks for confirmation first"
-    }
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:post-audit-hardening",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[4/5] Corrupt-config quarantine: JSONDecodeError renames config.json to .corrupt (timestamped when taken) instead of silent overwrite; boundary tests added for ramp 0.5-120min, carrier audibility >=20Hz, noise volume, preset auto-split; suite 100 passed",
-      "files_affected": [
-        "SourceCode.py",
-        "tests/test_verify_fixes.py",
-        "tests/test_ui_logic.py"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794768702.2635722,
-      "timestamp_str": "2026-11-15 21:51:42",
-      "agent": "claude:node1",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:post-audit-hardening",
       "phase": "phase 4",
@@ -418,6 +391,26 @@
         "mitigation": "Pure read-side change in visual.py with merge-level tests; SourceCode changes behind one ui cycle with pixel-diff review; revoke only touches one scalar and asks for confirmation first"
       },
       "plan_digest": "dc6116c9c269438a84d332f6060d06d021d90d3e58014fa55193e93ebe120d65",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:visual-audit-fixes",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[3/4] windows refresh probe, consent revoke, neutral zero-rate state (fixes b, c, d)",
+      "files_affected": [
+        "projects/NeuralBeat/SourceCode.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794773970.7082486,
+      "timestamp_str": "2026-11-15 23:19:30",
+      "agent": "claude:node1",
+      "checklists": "passed",
       "workspaces": [
         {
           "name": "NeuralBeat",

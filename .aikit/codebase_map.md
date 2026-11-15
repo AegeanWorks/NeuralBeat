@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `21`
 - **Total Classes**: `56`
-- **Total Top-Level Functions**: `70`
+- **Total Top-Level Functions**: `72`
 - **Total Class Methods**: `242`
-- **Total Source Lines**: `6516`
+- **Total Source Lines**: `6617`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`21` module(s))
@@ -36,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `2468` lines (`99054` bytes)
+**Size**: `2569` lines (`103267` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -77,13 +77,15 @@
 - `def get_visual_settings()` - *The visual section of config merged with defaults (backwards compatible).*
 - `def save_visual_setting(key, value)` - *Persist one key of the visual section in ~/.neuralbeat/config.json.*
 - `def get_visual_refresh_hz()` - *Calibrated screen refresh (conservative default when absent).*
-- `def probe_system_refresh_hz()` - *Nominal refresh reported by the system (xrandr). None when unavailable.*
+- `def probe_system_refresh_hz()` - *Nominal refresh reported by the system. None when unavailable.*
+- `def _windows_nominal_refresh_hz()` - *Nominal refresh (Hz) of the primary display via the Win32 API.*
 - `def get_visual_rate_request()` - *Resolves the requested visual rhythm from the UI state.*
 - `def get_visual_audio_time()` - *Audio time of the active stream (master clock: samples_generated).*
 - `def compute_visual_capability()` - *(request, VisualCapability) from the UI state and current calibration.*
 - `def update_visual_button()` - *Visible state of the Visual mode button: exact / approximate / harmonic*
 - `def toggle_visual_mode()` - *Visual mode button action: gate + consent + start-up.*
 - `def set_visual_intensity()` - *Comfy intensity (default) or bright (opt-in, with a warning).*
+- `def revoke_photosensitive_consent()` - *Clear the stored photosensitive consent so the strobe asks again.*
 - `def on_visual_harmonics_toggle()` - *Advanced flag of the experimental harmonic mode (off by default).*
 - `def run_screen_calibration()` - *Measures the real screen refresh (~2s full-screen).*
 - `def start_visual_mode(cap, req)` - *Opens the full-screen strobe anchored to the playing audio.*
