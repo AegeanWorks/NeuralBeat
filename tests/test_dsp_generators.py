@@ -12,6 +12,10 @@ from unittest.mock import MagicMock
 import sys
 from unittest.mock import patch
 
+# SourceCode imports real numpy and scipy (kept real by tests/conftest.py);
+# mirror the guarded reinstall pattern so a standalone run of this file still
+# mocks its UI and audio-output dependencies without clobbering earlier
+# installations when running under the full suite.
 MOCK_MODULES = {
     'tkinter': MagicMock(),
     'tkinter.ttk': MagicMock(),
@@ -23,7 +27,8 @@ MOCK_MODULES = {
     'matplotlib.backends.backend_tkagg': MagicMock(),
 }
 for mod_name, mock_obj in MOCK_MODULES.items():
-    sys.modules[mod_name] = mock_obj
+    if mod_name not in sys.modules:
+        sys.modules[mod_name] = mock_obj
 
 import SourceCode
 

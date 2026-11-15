@@ -9,14 +9,9 @@ from unittest.mock import MagicMock
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-# Mock heavy dependencies before importing SourceCode
-mock_scipy = MagicMock()
-mock_scipy.io = MagicMock()
-mock_scipy.signal = MagicMock()
-
+# Mock heavy dependencies before importing SourceCode; numpy and scipy stay
+# real, UI/output mocks come from tests/conftest.py.
 MOCK_MODULES = {
-    'numpy': MagicMock(),
-    'scipy': mock_scipy,
     'sounddevice': MagicMock(),
     'tkinter': MagicMock(),
     'tkinter.ttk': MagicMock(),

@@ -11,11 +11,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 # Mock heavy dependencies before importing SourceCode to allow testing
-# the AudioEngine's logic without requiring numpy, scipy, or sounddevice.
-mock_scipy = MagicMock()
-mock_scipy.io = MagicMock()
-mock_scipy.signal = MagicMock()
-
+# the AudioEngine's logic without requiring sounddevice (numpy and scipy
+# stay real; UI/output mocks come from tests/conftest.py).
 MOCK_MODULES = {
     'sounddevice': MagicMock(),
     'ttkbootstrap': MagicMock(),
