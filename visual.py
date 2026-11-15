@@ -39,6 +39,12 @@ DEFAULT_INTENSITY = "comoda"
 # recalibration on the real screen is recommended).
 DEFAULT_REFRESH_HZ = 60.0
 
+# Plausibility band for a stored/calibrated refresh. Values outside it are
+# rejected on read (hard-edited or imported configs) and flag a live
+# measurement as untrustworthy.
+REFRESH_MIN_HZ = 23.0
+REFRESH_MAX_HZ = 250.0
+
 # Classification tolerance (1%): the delivered rate is re-labelled with its
 # real effective frequency when it differs from the requested one.
 TOLERANCE_PCT = 1.0
@@ -374,7 +380,7 @@ def _percentile(sortedable: Sequence[float], pct: float) -> float:
 def validate_refresh_measurement(refresh_hz: float, jitter_ms: float
                                  ) -> Tuple[bool, str]:
     """Validates measurement plausibility. Returns (ok, confidence)."""
-    if not (23.0 <= refresh_hz <= 250.0):
+    if not (REFRESH_MIN_HZ <= refresh_hz <= REFRESH_MAX_HZ):
         return False, "low"
     if jitter_ms > 6.0:
         return False, "low"
@@ -422,6 +428,10 @@ def merge_visual_config(cfg: dict) -> dict:
 
     refresh = _num("refresh_hz")
     jitter = _num("jitter_ms")
+    # Read-side plausibility: a hand-edited or imported config must not feed
+    # an absurd refresh into BeatClock/LatenessMonitor.
+    if refresh is not None and not (REFRESH_MIN_HZ <= refresh <= REFRESH_MAX_HZ):
+        refresh = None
     consent = raw.get("photosensitive_consent")
     intensity = raw.get("intensity")
     harmonics = raw.get("harmonics_enabled")

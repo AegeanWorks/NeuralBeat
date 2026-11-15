@@ -9,8 +9,8 @@
 - **Total Python Modules**: `21`
 - **Total Classes**: `56`
 - **Total Top-Level Functions**: `70`
-- **Total Class Methods**: `241`
-- **Total Source Lines**: `6495`
+- **Total Class Methods**: `242`
+- **Total Source Lines**: `6516`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`21` module(s))
@@ -394,7 +394,7 @@
 ### [`tests/test_visual_capability.py`](tests/test_visual_capability.py)
 > *Tests del modo visual estroboscópico (change: modo-visual-estroboscopico).*
 
-**Size**: `572` lines (`23648` bytes)
+**Size**: `583` lines (`24267` bytes)
 
 **Classes:**
 - `class TestVisualCapabilityTable` - *Tabla de capacidad por refresco (tasks.md 1.1).*
@@ -439,6 +439,7 @@
   - Method `.test_config_parcial()`
   - Method `.test_valores_invalidos_a_defaults()`
   - Method `.test_roundtrip()`
+  - Method `.test_refresh_fuera_de_banda_a_none()` - *Read-side plausibility: hostile/absurd stored refresh never flows*
 - `class TestBeatClock`
   - Method `.test_constante()`
   - Method `.test_constante_siguiente_frontera()`
@@ -525,7 +526,7 @@
 ---
 
 ### [`visual.py`](visual.py)
-**Size**: `678` lines (`26543` bytes)
+**Size**: `688` lines (`27022` bytes)
 
 **Classes:**
 - `class VisualCapability` - *Gate result for a requested rate against a measured refresh.*

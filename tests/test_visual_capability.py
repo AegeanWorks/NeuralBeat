@@ -310,6 +310,17 @@ class TestVisualConfig(unittest.TestCase):
         self.assertEqual(v["calibrated_at"], "2026-10-19")
         self.assertTrue(v["photosensitive_consent"])
 
+    def test_refresh_fuera_de_banda_a_none(self):
+        """Read-side plausibility: hostile/absurd stored refresh never flows
+        into BeatClock/LatenessMonitor; the band matches
+        validate_refresh_measurement (23-250 Hz, inclusive)."""
+        for bad in (999999.0, 10.0, 8.0, 300.0):
+            v = visual.merge_visual_config({"visual": {"refresh_hz": bad}})
+            self.assertIsNone(v["refresh_hz"], bad)
+        for good in (23.0, 59.8, 120.0, 250.0):
+            v = visual.merge_visual_config({"visual": {"refresh_hz": good}})
+            self.assertAlmostEqual(v["refresh_hz"], good, msg=good)
+
 
 # ---------------------------------------------------------------------------
 # 8. BeatClock (fase del pulso de audio, incl. rampa)
