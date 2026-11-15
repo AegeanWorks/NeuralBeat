@@ -58,3 +58,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
   - *Positive*: Export then import preserves the visualizer appearance; invalid profile values cannot corrupt the live config.
   - *Trade-offs*: Unknown future top-level keys are still dropped on import; they need an explicit allow-list entry.
 - Cross-principle check: PRINCIPLE-016 (ADR), PRINCIPLE-013 (state atomicity via existing save path), PRINCIPLE-018 (commit and push).
+
+### ADR-005: Refactor UI for aesthetic, sleek, minimalistic layout and modern design hierarchy
+- **Date**: 2026-11-16
+- **Status**: Accepted
+- **Context**: The existing UI featured nested raw borders, ragged input alignments, cramped preset button rows, and cluttered layout per user request for an aesthetic, sleek, minimalistic interface
+- **Decision**: Adopt uniform card containers, symmetrical 2x2 ramp parameters, sleek inverse status pill, prominent hero action buttons, and aligned preset manager while preserving all functional bindings
+- **Consequences**: Improved visual hierarchy, uncluttered layout, zero test regressions, and full compatibility with existing audio engine and visual mode

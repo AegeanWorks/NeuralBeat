@@ -1984,14 +1984,11 @@ def apply_preset(left_hz: float = 0, right_hz: float = 0, category: str = "Binau
 
 def build_preset_buttons():
     allp = get_all_presets()
-    
-    # Clear frames
     for w in binaural_monaural_frame.winfo_children():
         w.destroy()
     for w in isochronic_beats_frame.winfo_children():
         w.destroy()
 
-    # Combined Binaural + Monaural presets
     combined_presets = allp["Binaural"] + allp["Monaural"]
     for i, p in enumerate(combined_presets):
         btn = ttk.Button(
@@ -1999,10 +1996,8 @@ def build_preset_buttons():
             text=p["label"],
             command=lambda l=p["left_hz"], r=p["right_hz"], c="Binaural": apply_preset(l, r, c)
         )
-        btn.grid(row=i, column=0, padx=10, pady=3, sticky="new")
-        binaural_monaural_frame.rowconfigure(i, weight=1)
+        btn.grid(row=i, column=0, padx=6, pady=2, sticky="ew")
 
-    # Isochronic presets - use carrier_hz and pulse_hz
     for i, p in enumerate(allp["Isochronic"]):
         carrier = p.get("carrier_hz", p.get("right_hz", 200.0))
         pulse = p.get("pulse_hz", p.get("left_hz", 10.0))
@@ -2011,8 +2006,7 @@ def build_preset_buttons():
             text=p["label"],
             command=lambda c=carrier, pl=pulse: apply_preset(0, 0, "Isochronic", carrier_hz=c, pulse_hz=pl)
         )
-        btn.grid(row=i, column=0, padx=10, pady=3, sticky="new")
-        isochronic_beats_frame.rowconfigure(i, weight=1)
+        btn.grid(row=i, column=0, padx=6, pady=2, sticky="ew")
 
 def save_current_as_preset():
     try:
@@ -2180,31 +2174,34 @@ def on_close():
             logger.error("Error closing application", exc_info=True)
 
 def create_frequency_control_frame(parent, title, column, waveform_options, default_freq="432", default_vol="50", default_waveform="Sine"):
-    frame = ttk.LabelFrame(parent, text=title)
-    frame.grid(row=0, column=column, padx=10, pady=10, sticky="nsew")
+    frame = tb.Labelframe(parent, text=title, bootstyle="secondary")
+    frame.grid(row=0, column=column, padx=8, pady=6, sticky="nsew")
+    frame.columnconfigure(0, weight=1)
+    frame.columnconfigure(1, weight=1)
 
-    freq_label = ttk.Label(frame, text="Frequency (Hz):")
-    freq_label.grid(row=0, column=0, padx=10, pady=5, sticky="e")
-    freq_entry = ttk.Entry(frame, width=10)
-    freq_entry.grid(row=0, column=1, padx=10, pady=5)
+    freq_label = tb.Label(frame, text="Frequency (Hz):")
+    freq_label.grid(row=0, column=0, padx=8, pady=4, sticky="e")
+    freq_entry = tb.Entry(frame, width=12)
+    freq_entry.grid(row=0, column=1, padx=8, pady=4, sticky="w")
     freq_entry.insert(0, default_freq)
 
-    vol_label = ttk.Label(frame, text="Volume (%):")
-    vol_label.grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    vol_entry = ttk.Entry(frame, width=10)
-    vol_entry.grid(row=1, column=1, padx=10, pady=5)
+    vol_label = tb.Label(frame, text="Volume (%):")
+    vol_label.grid(row=1, column=0, padx=8, pady=4, sticky="e")
+    vol_entry = tb.Entry(frame, width=12)
+    vol_entry.grid(row=1, column=1, padx=8, pady=4, sticky="w")
     vol_entry.insert(0, default_vol)
 
-    waveform_label = ttk.Label(frame, text="Waveform:")
-    waveform_label.grid(row=2, column=0, padx=10, pady=5, sticky="e")
+    waveform_label = tb.Label(frame, text="Waveform:")
+    waveform_label.grid(row=2, column=0, padx=8, pady=4, sticky="e")
     waveform_var = tk.StringVar()
-    waveform_combobox = ttk.Combobox(
+    waveform_combobox = tb.Combobox(
         frame,
         textvariable=waveform_var,
         values=waveform_options,
-        width=14
+        width=11,
+        state="readonly"
     )
-    waveform_combobox.grid(row=2, column=1, padx=10, pady=5)
+    waveform_combobox.grid(row=2, column=1, padx=8, pady=4, sticky="w")
     waveform_combobox.set(default_waveform)
 
     return freq_entry, vol_entry, waveform_var, waveform_combobox, freq_label, vol_label, waveform_label, frame
@@ -2423,162 +2420,175 @@ def main():
     update_freq_labels()
 
     # Presets UI (built-in presets.py + user presets from config.json)
-    presets_frame = ttk.LabelFrame(root, text="Presets")
-    presets_frame.grid(row=0, column=2, rowspan=3, padx=10, pady=10, sticky="nsew")
+    presets_frame = tb.Labelframe(root, text="Sound Presets", bootstyle="secondary")
+    presets_frame.grid(row=0, column=2, rowspan=3, padx=8, pady=6, sticky="nsew")
     presets_frame.columnconfigure(0, weight=1)
     presets_frame.columnconfigure(1, weight=1)
     presets_frame.rowconfigure(0, weight=1)
     presets_frame.rowconfigure(1, weight=0)
 
-    binaural_monaural_frame = ttk.LabelFrame(presets_frame, text="Binaural Beat / Monaural Beat")
-    binaural_monaural_frame.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    binaural_monaural_frame = tb.Labelframe(presets_frame, text="Binaural / Monaural", bootstyle="dark")
+    binaural_monaural_frame.grid(row=0, column=0, padx=4, pady=4, sticky="nsew")
+    binaural_monaural_frame.columnconfigure(0, weight=1)
 
-    isochronic_beats_frame = ttk.LabelFrame(presets_frame, text="Isochronic Tone")
-    isochronic_beats_frame.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
+    isochronic_beats_frame = tb.Labelframe(presets_frame, text="Isochronic Tone", bootstyle="dark")
+    isochronic_beats_frame.grid(row=0, column=1, padx=4, pady=4, sticky="nsew")
+    isochronic_beats_frame.columnconfigure(0, weight=1)
 
-    create_preset_frame = ttk.LabelFrame(presets_frame, text="Create / Remove Preset (User Presets)")
-    create_preset_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
+    create_preset_frame = tb.Labelframe(presets_frame, text="Preset Manager", bootstyle="dark")
+    create_preset_frame.grid(row=1, column=0, columnspan=2, padx=4, pady=4, sticky="nsew")
+    create_preset_frame.columnconfigure(0, weight=1)
+    create_preset_frame.columnconfigure(1, weight=1)
 
-    preset_name_label = ttk.Label(create_preset_frame, text="Name (Exact):")
-    preset_name_label.grid(row=0, column=0, padx=10, pady=6, sticky="e")
-    preset_name_entry = ttk.Entry(create_preset_frame, width=28)
-    preset_name_entry.grid(row=0, column=1, padx=10, pady=6, sticky="w")
+    tb.Label(create_preset_frame, text="Name:").grid(row=0, column=0, padx=6, pady=4, sticky="e")
+    preset_name_entry = tb.Entry(create_preset_frame, width=24)
+    preset_name_entry.grid(row=0, column=1, padx=6, pady=4, sticky="w")
 
-    preset_category_label = ttk.Label(create_preset_frame, text="Type:")
-    preset_category_label.grid(row=1, column=0, padx=10, pady=6, sticky="e")
+    tb.Label(create_preset_frame, text="Type:").grid(row=1, column=0, padx=6, pady=4, sticky="e")
     preset_category_var = tk.StringVar(value="Binaural Beat / Monaural Beat")
-    preset_category_combo = ttk.Combobox(
+    preset_category_combo = tb.Combobox(
         create_preset_frame,
         textvariable=preset_category_var,
         values=["Binaural Beat / Monaural Beat", "Isochronic Tone"],
         state="readonly",
-        width=25
+        width=22
     )
-    preset_category_combo.grid(row=1, column=1, padx=10, pady=6, sticky="w")
+    preset_category_combo.grid(row=1, column=1, padx=6, pady=4, sticky="w")
 
-    save_preset_button = ttk.Button(create_preset_frame, text="Save Current Frequencies as Preset", command=save_current_as_preset)
-    save_preset_button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+    save_preset_button = tb.Button(create_preset_frame, text="Save Preset", command=save_current_as_preset,
+                                   bootstyle="info-outline")
+    save_preset_button.grid(row=2, column=0, padx=6, pady=6, sticky="ew")
 
-    delete_preset_button = ttk.Button(create_preset_frame, text="Remove Preset", command=delete_preset)
-    delete_preset_button.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+    delete_preset_button = tb.Button(create_preset_frame, text="Remove Preset", command=delete_preset,
+                                     bootstyle="secondary-outline")
+    delete_preset_button.grid(row=2, column=1, padx=6, pady=6, sticky="ew")
 
     build_preset_buttons()
 
-    # Ramp controls (under frequency frames)
-    advanced_controls_frame = ttk.LabelFrame(root, text="Advanced Controls")
-    advanced_controls_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
-
-    # Configure grid to center content
+    # Advanced Controls (under frequency frames)
+    advanced_controls_frame = tb.Labelframe(root, text="Modulation & Controls", bootstyle="secondary")
+    advanced_controls_frame.grid(row=2, column=0, columnspan=2, padx=8, pady=6, sticky="nsew")
     advanced_controls_frame.columnconfigure(0, weight=1)
-    advanced_controls_frame.columnconfigure(1, weight=0)
-    advanced_controls_frame.columnconfigure(2, weight=1)
+    advanced_controls_frame.columnconfigure(1, weight=1)
+    advanced_controls_frame.rowconfigure(2, weight=1)
 
     # --- Beat Type selector ---
-    beat_type_subsection = ttk.LabelFrame(advanced_controls_frame, text="Beat Type")
-    beat_type_subsection.grid(row=0, column=0, columnspan=3, pady=4, sticky="w")
+    beat_type_subsection = tb.Labelframe(advanced_controls_frame, text="Beat Type", bootstyle="dark")
+    beat_type_subsection.grid(row=0, column=0, columnspan=2, padx=6, pady=3, sticky="ew")
     beat_type_subsection.columnconfigure(0, weight=1)
     beat_type_subsection.columnconfigure(1, weight=1)
 
-    ttk.Radiobutton(beat_type_subsection, text="Binaural Beat / Monaural Beat", variable=beat_type_var, value="binaural").grid(row=0, column=0, padx=10, pady=5)
-    ttk.Radiobutton(beat_type_subsection, text="Isochronic Tone", variable=beat_type_var, value="isochronic").grid(row=0, column=1, padx=10, pady=5)
+    tb.Radiobutton(beat_type_subsection, text="Binaural Beat / Monaural Beat", variable=beat_type_var, value="binaural",
+                   bootstyle="primary").grid(row=0, column=0, padx=8, pady=4)
+    tb.Radiobutton(beat_type_subsection, text="Isochronic Tone", variable=beat_type_var, value="isochronic",
+                   bootstyle="primary").grid(row=0, column=1, padx=8, pady=4)
 
-    # --- Subsections within the main ramp frame ---
-    noise_subsection_frame = ttk.LabelFrame(advanced_controls_frame, text="Background Noise")
-    noise_subsection_frame.grid(row=1, column=0, columnspan=3, pady=4, sticky="w")
+    # --- Background Noise subsection ---
+    noise_subsection_frame = tb.Labelframe(advanced_controls_frame, text="Background Noise", bootstyle="dark")
+    noise_subsection_frame.grid(row=1, column=0, columnspan=2, padx=6, pady=3, sticky="ew")
+    noise_subsection_frame.columnconfigure(0, weight=1)
+    noise_subsection_frame.columnconfigure(1, weight=1)
+    noise_subsection_frame.columnconfigure(2, weight=1)
+    noise_subsection_frame.columnconfigure(3, weight=1)
 
-    ramp_subsection_frame = ttk.LabelFrame(advanced_controls_frame, text="Ramp Settings")
-    ramp_subsection_frame.grid(row=2, column=0, columnspan=3, pady=4, sticky="w")
-
-    # --- Populate Background Noise subsection ---
-    noise_type_label = ttk.Label(noise_subsection_frame, text="Noise Type:")
-    noise_type_label.grid(row=0, column=0, padx=10, pady=4, sticky="e")
-
+    tb.Label(noise_subsection_frame, text="Noise Type:").grid(row=0, column=0, padx=6, pady=4, sticky="e")
     noise_type_var = tk.StringVar(value="None")
-    noise_type_combo = ttk.Combobox(
+    noise_type_combo = tb.Combobox(
         noise_subsection_frame,
         textvariable=noise_type_var,
         values=["None", "White", "Pink", "Brown"],
         state="readonly",
-        width=15
+        width=12
     )
-    noise_type_combo.grid(row=0, column=1, padx=10, pady=4, sticky="w")
+    noise_type_combo.grid(row=0, column=1, padx=6, pady=4, sticky="w")
 
-    noise_volume_label = ttk.Label(noise_subsection_frame, text="Volume (%):")
-    noise_volume_label.grid(row=1, column=0, padx=10, pady=4, sticky="e")
-    noise_volume_entry = ttk.Entry(noise_subsection_frame, width=10)
-    noise_volume_entry.grid(row=1, column=1, padx=10, pady=4, sticky="w")
+    tb.Label(noise_subsection_frame, text="Volume (%):").grid(row=0, column=2, padx=6, pady=4, sticky="e")
+    noise_volume_entry = tb.Entry(noise_subsection_frame, width=10)
+    noise_volume_entry.grid(row=0, column=3, padx=6, pady=4, sticky="w")
     noise_volume_entry.insert(0, "10")
 
-    # --- Populate Ramp Settings subsection ---
+    # --- Ramp Settings subsection ---
+    ramp_subsection_frame = tb.Labelframe(advanced_controls_frame, text="Frequency Ramp", bootstyle="dark")
+    ramp_subsection_frame.grid(row=2, column=0, columnspan=2, padx=6, pady=3, sticky="nsew")
+    ramp_subsection_frame.columnconfigure(0, weight=1)
+    ramp_subsection_frame.columnconfigure(1, weight=1)
+    ramp_subsection_frame.columnconfigure(2, weight=1)
+    ramp_subsection_frame.columnconfigure(3, weight=1)
+
     ramp_enabled_var = tk.BooleanVar(value=False)
-    # Container for the switch to center it
-    switch_container = ttk.Frame(ramp_subsection_frame)
-    switch_container.grid(row=0, column=0, columnspan=2, pady=10)
-    ramp_label = ttk.Label(switch_container, text="Enable Ramp")
-    ramp_label.pack(side='left', padx=5)
+    switch_container = tb.Frame(ramp_subsection_frame)
+    switch_container.grid(row=0, column=0, columnspan=4, pady=4)
+    tb.Label(switch_container, text="Enable Ramp", font=("Segoe UI", 9, "bold")).pack(side='left', padx=6)
     ramp_switch = tb.Checkbutton(switch_container, variable=ramp_enabled_var, bootstyle="success-round-toggle")
     ramp_switch.pack(side='left')
 
-    carrier_label = ttk.Label(ramp_subsection_frame, text="Carrier (Hz):")
-    carrier_label.grid(row=1, column=0, padx=10, pady=4, sticky="e")
-    carrier_entry = ttk.Entry(ramp_subsection_frame, width=10)
-    carrier_entry.grid(row=1, column=1, padx=10, pady=4, sticky="w")
+    tb.Label(ramp_subsection_frame, text="Carrier (Hz):").grid(row=1, column=0, padx=6, pady=3, sticky="e")
+    carrier_entry = tb.Entry(ramp_subsection_frame, width=10)
+    carrier_entry.grid(row=1, column=1, padx=6, pady=3, sticky="w")
     carrier_entry.insert(0, "432")
 
-    start_beat_label = ttk.Label(ramp_subsection_frame, text="Start beat (Hz):")
-    start_beat_label.grid(row=2, column=0, padx=10, pady=4, sticky="e")
-    start_beat_entry = ttk.Entry(ramp_subsection_frame, width=10)
-    start_beat_entry.grid(row=2, column=1, padx=10, pady=4, sticky="w")
+    tb.Label(ramp_subsection_frame, text="Start beat (Hz):").grid(row=1, column=2, padx=6, pady=3, sticky="e")
+    start_beat_entry = tb.Entry(ramp_subsection_frame, width=10)
+    start_beat_entry.grid(row=1, column=3, padx=6, pady=3, sticky="w")
     start_beat_entry.insert(0, "20")
 
-    end_beat_label = ttk.Label(ramp_subsection_frame, text="End beat (Hz):")
-    end_beat_label.grid(row=3, column=0, padx=10, pady=4, sticky="e")
-    end_beat_entry = ttk.Entry(ramp_subsection_frame, width=10)
-    end_beat_entry.grid(row=3, column=1, padx=10, pady=4, sticky="w")
-    end_beat_entry.insert(0, "3")
-
-    ramp_minutes_label = ttk.Label(ramp_subsection_frame, text="Duration (min):")
-    ramp_minutes_label.grid(row=4, column=0, padx=10, pady=4, sticky="e")
-    ramp_minutes_entry = ttk.Entry(ramp_subsection_frame, width=10)
-    ramp_minutes_entry.grid(row=4, column=1, padx=10, pady=4, sticky="w")
+    tb.Label(ramp_subsection_frame, text="Duration (min):").grid(row=2, column=0, padx=6, pady=3, sticky="e")
+    ramp_minutes_entry = tb.Entry(ramp_subsection_frame, width=10)
+    ramp_minutes_entry.grid(row=2, column=1, padx=6, pady=3, sticky="w")
     ramp_minutes_entry.insert(0, "30")
 
+    tb.Label(ramp_subsection_frame, text="End beat (Hz):").grid(row=2, column=2, padx=6, pady=3, sticky="e")
+    end_beat_entry = tb.Entry(ramp_subsection_frame, width=10)
+    end_beat_entry.grid(row=2, column=3, padx=6, pady=3, sticky="w")
+    end_beat_entry.insert(0, "3")
+
     # --- Bottom control bar ---
-    bottom_frame = ttk.Frame(root)
-    bottom_frame.grid(row=3, column=0, columnspan=3, pady=6, sticky="ew")
-    bottom_frame.columnconfigure(0, weight=1)
+    bottom_frame = tb.Frame(root, bootstyle="dark", padding=(10, 8))
+    bottom_frame.grid(row=3, column=0, columnspan=3, padx=8, pady=(2, 6), sticky="ew")
+    bottom_frame.columnconfigure(0, weight=0)
     bottom_frame.columnconfigure(1, weight=1)
-    bottom_frame.columnconfigure(2, weight=1)
+    bottom_frame.columnconfigure(2, weight=0)
 
-    generate_button = ttk.Button(bottom_frame, text="Generate Beat", command=play_audio)
-    generate_button.grid(row=0, column=0, sticky="e", padx=20)
+    action_box = tb.Frame(bottom_frame)
+    action_box.grid(row=0, column=0, sticky="w", padx=(4, 12))
+    generate_button = tb.Button(action_box, text="Generate Beat", command=play_audio,
+                                bootstyle="primary", width=14)
+    generate_button.pack(side="left", padx=(0, 6))
 
-    status_label = ttk.Label(bottom_frame, textvariable=status_var,
-                             anchor="center", style="Status.TLabel")
-    status_label.grid(row=0, column=1, sticky="ew")
+    status_card = tb.Frame(bottom_frame, bootstyle="secondary", padding=(10, 5))
+    status_card.grid(row=0, column=1, sticky="ew", padx=6)
+    status_label = tb.Label(
+        status_card, textvariable=status_var,
+        anchor="center", justify="center",
+        font=("Segoe UI", 10, "bold"), bootstyle="inverse-secondary"
+    )
+    status_label.pack(fill="both", expand=True)
 
-    stop_button = ttk.Button(bottom_frame, text="Stop", width=14,
-                             command=stop_audio)
-    stop_button.grid(row=0, column=2, sticky="w", padx=20)
+    util_box = tb.Frame(bottom_frame)
+    util_box.grid(row=0, column=2, sticky="e", padx=(12, 4))
+    stop_button = tb.Button(util_box, text="Stop", width=10, command=stop_audio,
+                            bootstyle="danger-outline")
+    stop_button.pack(side="left", padx=(0, 6))
 
-    # --- Visual mode (strobe): its own row in the bottom bar ---
-    # No LabelFrame (its title stole the height this row needs) and a
-    # wraplength on the label: long status text widened the window and pushed
-    # the preset column off screen.
     visual_toggle_button = tb.Button(
-        bottom_frame, text="Visual mode", command=toggle_visual_mode,
-        bootstyle="secondary")
-    visual_toggle_button.grid(row=1, column=0, sticky="e", padx=20, pady=(10, 4))
+        util_box, text="Visual mode", command=toggle_visual_mode,
+        bootstyle="secondary", width=12)
+    visual_toggle_button.pack(side="left")
 
-    visual_status_label = ttk.Label(
-        bottom_frame, text="Visual: -", anchor="center", justify="center",
-        wraplength=640, style="Status.TLabel")
-    visual_status_label.grid(row=1, column=1, sticky="ew", pady=(10, 4))
+    sub_frame = tb.Frame(bottom_frame)
+    sub_frame.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(6, 0))
+    sub_frame.columnconfigure(0, weight=1)
+    sub_frame.columnconfigure(1, weight=1)
 
-    visual_disclaimer_label = ttk.Label(
-        bottom_frame, text="Not a medical device or treatment.",
-        anchor="e")
-    visual_disclaimer_label.grid(row=1, column=2, sticky="e", padx=20, pady=(10, 4))
+    visual_status_label = tb.Label(
+        sub_frame, text="Visual: -", anchor="w", justify="left",
+        wraplength=520, font=("Segoe UI", 8), bootstyle="secondary")
+    visual_status_label.grid(row=0, column=0, sticky="w", padx=4)
+
+    visual_disclaimer_label = tb.Label(
+        sub_frame, text="Not a medical device or treatment.",
+        anchor="e", font=("Segoe UI", 8), bootstyle="secondary")
+    visual_disclaimer_label.grid(row=0, column=1, sticky="e", padx=4)
 
     # The gate state is recomputed when rhythm, category or ramp changes
     beat_type_var.trace_add("write", lambda *a: update_visual_button())
