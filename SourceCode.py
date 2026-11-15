@@ -1105,6 +1105,191 @@ def on_visual_harmonics_toggle():
     update_visual_button()
 
 
+def run_screen_calibration():
+    """Measures the real screen refresh (~2s full-screen).
+
+    Alternates frames while timing each presentation with perf_counter;
+    persists refresh (median) and jitter (p95) in ~/.neuralbeat/config.json.
+    """
+    stamps = []
+    cal_win = None
+    try:
+        cal_win = tk.Toplevel(root)
+        cal_win.attributes("-fullscreen", True)
+        cal_win.configure(bg="#000000")
+        cal_canvas = tk.Canvas(cal_win, bg="#000000", highlightthickness=0)
+        cal_canvas.pack(fill=tk.BOTH, expand=True)
+        cal_rect = cal_canvas.create_rectangle(
+            0, 0, cal_win.winfo_screenwidth(),
+            cal_win.winfo_screenheight(),
+            fill="#000000", outline="")
+        cal_win.focus_force()
+        try:
+            cal_win.update_idletasks()
+            cal_win.update()
+        except Exception:
+            pass
+        colors = ("#FFFFFF", "#000000")
+        t_end = time.perf_counter() + 2.0
+        i = 0
+        while time.perf_counter() < t_end:
+            cal_canvas.itemconfig(cal_rect, fill=colors[i % 2])
+            cal_win.update()
+            stamps.append(time.perf_counter())
+            i += 1
+    except Exception:
+        logger.error("Screen calibration failed", exc_info=True)
+    finally:
+        if cal_win is not None:
+            try:
+                cal_win.destroy()
+            except Exception:
+                pass
+    try:
+        refresh, jitter = visual.compute_refresh_stats(stamps)
+        ok, confidence = visual.validate_refresh_measurement(refresh, jitter)
+        v = config.get("visual") if isinstance(config.get("visual"), dict) else {}
+        if ok:
+            v["refresh_hz"] = refresh
+            v["confidence"] = confidence
+            detail = (f"Measured refresh: {refresh:.1f} Hz "
+                      f"(p95 jitter {jitter:.2f} ms, confidence {confidence}).")
+        else:
+            # Implausible measurement (remote session, a compositor without
+            # frame limits...): the nominal system refresh if available;
+            # otherwise the conservative default plus a recalibration hint.
+            sys_hz = probe_system_refresh_hz()
+            if sys_hz:
+                v["refresh_hz"] = sys_hz
+                v["confidence"] = "system"
+                detail = (f"Unreliable measurement ({refresh:.0f} Hz, jitter "
+                          f"{jitter:.1f} ms). Using the refresh reported by "
+                          f"the system: {sys_hz:.2f} Hz (not measured). Try "
+                          f"'Recalibrate screen' on a real desktop.")
+            else:
+                v["refresh_hz"] = visual.DEFAULT_REFRESH_HZ
+                v["confidence"] = "low"
+                detail = (f"Unreliable measurement ({refresh:.0f} Hz, jitter "
+                          f"{jitter:.1f} ms). Using the {visual.DEFAULT_REFRESH_HZ:.0f} Hz "
+                          f"default and the gate stays conservative. Try "
+                          f"'Recalibrate screen' on a real desktop.")
+        v["jitter_ms"] = jitter
+        v["calibrated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        config["visual"] = v
+        save_config(config)
+        messagebox.showinfo("Screen calibration", detail)
+        logger.info("Screen calibration: %s", detail)
+    except (ValueError, ZeroDivisionError) as e:
+        messagebox.showerror("Screen calibration",
+                             f"Could not measure the refresh: {e}")
+    update_visual_button()
+
+
+def start_visual_mode(cap, req):
+    """Opens the full-screen strobe anchored to the playing audio."""
+    global visual_mode_active, visual_window, visual_scheduler
+    global visual_lateness_monitor, visual_active_cap, visual_active_gen
+    global visual_active_req, visual_beat_clock, visual_active_status
+
+    settings = get_visual_settings()
+    off_color, on_color = visual.INTENSITY_PAIRS.get(
+        settings["intensity"], visual.INTENSITY_PAIRS["comoda"])
+    refresh = get_visual_refresh_hz()
+
+    gen = audio_engine.generator
+    cfg = audio_engine.current_config
+    if gen is None or cfg is None:
+        messagebox.showerror("Visual mode", "No active audio.")
+        return
+
+    if req["mode"] == "ramp" and req["ramp_s"]:
+        beat_clock = visual.BeatClock(start_hz=max(0.1, req["start_hz"]),
+                                      end_hz=max(0.1, req["end_hz"]),
+                                      ramp_s=req["ramp_s"])
+    else:
+        beat_clock = visual.BeatClock(rate_hz=max(0.1, req["rate_hz"]))
+
+    strobe_win = tk.Toplevel(root)
+    strobe_win.attributes("-fullscreen", True)
+    strobe_win.configure(bg=off_color)
+    strobe_canvas = tk.Canvas(strobe_win, bg=off_color, highlightthickness=0)
+    strobe_canvas.pack(fill=tk.BOTH, expand=True)
+    strobe_rect = strobe_canvas.create_rectangle(
+        0, 0, 4000, 4000, fill=off_color, outline="")
+
+    def _on_strobe_resize(event):
+        try:
+            strobe_canvas.coords(strobe_rect, 0, 0, event.width, event.height)
+        except Exception:
+            pass
+
+    strobe_canvas.bind("<Configure>", _on_strobe_resize)
+
+    def _on_flip(state):
+        try:
+            strobe_canvas.itemconfig(strobe_rect,
+                                     fill=on_color if state else off_color)
+        except Exception:
+            pass
+
+    def _rebuild(rate_hz):
+        # Ramps: the pattern follows the current sweep value
+        if req["mode"] != "ramp":
+            return None
+        try:
+            cap_now = visual.visual_capability(
+                rate_hz, refresh, get_visual_settings()["harmonics_enabled"])
+        except Exception:
+            return None
+        if not cap_now.available:
+            return None  # the gate already validated the sweep; keep the pattern
+        return (cap_now.pattern, cap_now.cycles_per_window)
+
+    scheduler = visual.StrobeScheduler(
+        cap.pattern, refresh, _on_flip,
+        clock=time.perf_counter,
+        get_audio_time=get_visual_audio_time,
+        beat_clock=beat_clock,
+        cycles_per_window=cap.cycles_per_window,
+        free_running=(cap.state == "armonico"),
+        reanchor_interval_s=1.0,
+        rebuild_fn=_rebuild)
+
+    # Immediate exit: any key or click closes and restores the main window
+    for btn in (1, 2, 3):
+        strobe_win.bind(f"<Button-{btn}>", lambda e: close_visual_mode())
+    strobe_win.bind("<Key>", lambda e: close_visual_mode())
+    strobe_win.protocol("WM_DELETE_WINDOW", lambda: close_visual_mode())
+    try:
+        strobe_win.focus_force()
+    except Exception:
+        pass
+
+    visual_window = strobe_win
+    visual_scheduler = scheduler
+    visual_lateness_monitor = visual.LatenessMonitor(1.0 / refresh)
+    visual_active_cap = cap
+    visual_active_gen = gen
+    visual_active_req = req
+    visual_beat_clock = beat_clock
+    visual_mode_active = True
+
+    base_label = visual.capability_label(
+        cap, req["rate_hz"] if req["mode"] != "ramp" else None)
+    if cap.requested_hz is None and req["rate_hz"]:
+        base_label += " (substitute: a different frequency than requested)"
+    visual_active_status = (
+        f"Visual active: {base_label} - exit with any key/click - "
+        f"{visual.intensity_note(settings['intensity'])} - "
+        f"not a medical device or treatment")
+    update_visual_button()
+    # start() anchors to the audio pulse and sets started=True: without it,
+    # the first poll() returns None and the mode closes instantly
+    # ("the audio is not advancing").
+    scheduler.start()
+    visual_poll()
+
+
 # =============================================================================
 # UI & Interaction
 # =============================================================================
