@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "neuralbeat:fork-review-sync",
-    "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1794770274.7901049,
+    "task_id": "neuralbeat:strobe-adoption",
+    "last_phase": "phase 2",
+    "active_phase": 2,
+    "status": "in_progress",
+    "updated_at": 1794771239.6577806,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -14,36 +14,9 @@
         "name": "NeuralBeat",
         "path": "projects/NeuralBeat"
       }
-    ],
-    "completed_at": 1794770275.201779,
-    "completed_head": "96fc90850cfa4e309e7650f472ed3be1f7c47e33",
-    "completed_tree": "9445bef3c631ff773a6c8bc712d062e5c6ec1051"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 42",
-      "phase_num": 3,
-      "description": "Reforge stage 42: stage 42 host review reviewed; run active; coverage 1/1",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456675.5136597,
-      "timestamp_str": "2026-10-31 17:24:35",
-      "agent": "github"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 43",
-      "phase_num": 3,
-      "description": "Reforge stage 43: window 128, 2 commit(s), 1 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, 1 binary not analysed",
-      "files_affected": [
-        "binauralbeatproject.exe"
-      ],
-      "status": "in_progress",
-      "timestamp": 1793456686.8429763,
-      "timestamp_str": "2026-10-31 17:24:46",
-      "agent": "github"
-    },
     {
       "task_id": "reforge:run-7",
       "phase": "reforge stage 43",
@@ -372,6 +345,51 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/6] Plan: adopt MoriNo23 strobe visual mode \u2014 port visual.py + its tests (translated to English), then wire the SourceCode mode in two UI-task phases to respect the 300-line surface budget; launch-gated UI: fullscreen strobe off by default, photosensitive consent dialog, honest capability gate, no medical claims",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794770581.1338058,
+      "timestamp_str": "2026-11-15 22:23:01",
+      "agent": "claude:node1",
+      "impact_assessment": {
+        "why": "User requested taking the fork's strobe feature; the core module is pure stdlib with 44 unit tests, safety-gated (no rate > refresh/2, lateness abort, explicit consent), and fills the product's visual stimulation gap",
+        "benefits": "Screen-tightening companion to audio beats with honest screen-capability reporting; reversible toggle in the bottom bar; calibration persisted in config visual section; tests raise suite to ~144",
+        "risks": "contract: ~560 fork wiring lines re-implemented against our diverged SourceCode (integration points: stop_audio, on_close, play_audio, apply_preset, main menu/bottom bar) -- kept additive, no signature changes; dependency: stdlib-only visual.py; concurrency: StrobeScheduler runs on Tk after() loop, no new threads -- import_config_json must reject hostile visual sections (merge_visual_config already coerces); state: visual settings persisted under config.visual -- sanitised by merge_visual_config on read",
+        "mitigation": "Port module+tests as one commit and run them standalone before any SourceCode change; wire in two sub-phases each under its own ui begin/verify/finish cycle; photosensitive warning dialog before first enable; fullscreen mode only via explicit button while audio plays; README updated same commit; visual review via PrintWindow captures of main window only (never capture active full-screen flashing)"
+      },
+      "plan_digest": "995dcdc6ace456d820242833dacf7ba68a7dd3e5c2fc57e95c782d56bb909638",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[2/6] Ported visual.py core: translated all docstrings/comments/user-facing strings to English (state identifiers kept identical to the fork); split the fork test file - pure-visual tests in tests/test_visual_capability.py (49 green standalone), SourceCode-dependent classes parked for the wiring milestone. Full suite 149 passed.",
+      "files_affected": [
+        "visual.py",
+        "tests/test_visual_capability.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794771239.6577806,
+      "timestamp_str": "2026-11-15 22:33:59",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
     }
   ]
 }

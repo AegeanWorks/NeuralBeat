@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `18`
-- **Total Classes**: `36`
-- **Total Top-Level Functions**: `38`
-- **Total Class Methods**: `157`
-- **Total Source Lines**: `4388`
+- **Total Python Modules**: `20`
+- **Total Classes**: `53`
+- **Total Top-Level Functions**: `54`
+- **Total Class Methods**: `229`
+- **Total Source Lines**: `5638`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`18` module(s))
+- **Indexed**: python (`20` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -376,6 +376,83 @@
 
 ---
 
+### [`tests/test_visual_capability.py`](tests/test_visual_capability.py)
+> *Tests del modo visual estroboscópico (change: modo-visual-estroboscopico).*
+
+**Size**: `572` lines (`23648` bytes)
+
+**Classes:**
+- `class TestVisualCapabilityTable` - *Tabla de capacidad por refresco (tasks.md 1.1).*
+  - Method `.test_299_exacto_on_598()`
+  - Method `.test_10_exacto_on_598()`
+  - Method `.test_16_aproximado_on_598()`
+  - Method `.test_40_no_disponible_on_598()`
+  - Method `.test_40_exacto_on_120()`
+  - Method `.test_mejor_monitor_desbloquea_40()` - *Monitor 120 Hz recalibrado: 40 pasa a exacto sin cambios de código.*
+- `class TestRawEmissionRejection` - *Rechazo de emisión cruda: f > refresh/2 nunca entrega exacto/aproximado*
+  - Method `.test_sobre_nyquist_siempre_no_disponible()`
+  - Method `.test_tolerancia_borde()`
+  - Method `.test_entradas_invalidas()`
+- `class TestPatterns`
+  - Method `.test_exacto_duty_50_pares()`
+  - Method `.test_aproximado_duty_y_ventana()`
+  - Method `.test_armonico_patron_3_fotogramas_duty_1_3()`
+  - Method `.test_relacion_coeficientes_armonico()` - *|c2|/|c1| del tren de pulsos con duty 1/3 es ~0.5 (design.md).*
+- `class TestHarmonicAndSubstitute`
+  - Method `.test_sin_flag_no_aparece_armonico()`
+  - Method `.test_con_flag_40hz_usa_3_fotogramas()`
+  - Method `.test_candidato_solo_si_existe_divisor()`
+  - Method `.test_sustituto_maximo_exacto()`
+- `class TestRampGate`
+  - Method `.test_rampa_que_cruza_el_maximo_bloquea()` - *El gate se evalúa con el peor punto, no con el valor inicial.*
+  - Method `.test_rampa_descendente_tambien_bloquea()`
+  - Method `.test_rampa_soportable_no_bloquea()`
+  - Method `.test_rampa_solo_exactos()`
+- `class TestLabels`
+  - Method `.test_etiqueta_exacto()`
+  - Method `.test_etiqueta_exacto_reetiquetado()`
+  - Method `.test_etiqueta_aproximado_con_jitter()`
+  - Method `.test_etiqueta_no_disponible_con_razon()`
+  - Method `.test_notas_intensidad()`
+- `class TestRefreshStats`
+  - Method `.test_pantalla_598()`
+  - Method `.test_jitter_medido()`
+  - Method `.test_marcas_insuficientes()`
+  - Method `.test_validacion_plausibilidad()`
+- `class TestVisualConfig`
+  - Method `.test_config_sin_claves_no_rompe()`
+  - Method `.test_config_parcial()`
+  - Method `.test_valores_invalidos_a_defaults()`
+  - Method `.test_roundtrip()`
+- `class TestBeatClock`
+  - Method `.test_constante()`
+  - Method `.test_constante_siguiente_frontera()`
+  - Method `.test_rampa_coincide_con_formula_del_motor()` - *rate_at reproduce _compute_ramped_beat_hz de SourceCode.py.*
+  - Method `.test_rampa_frontera_cae_en_ciclo_entero()`
+  - Method `.test_rechaza_frecuencia_invalida()`
+- `class FakeClock`
+  - Method `.__init__(t)`
+  - Method `.__call__()`
+- `class _Runner` - *Entorno con reloj falso y tiempo de audio derivable (con deriva opcional).*
+  - Method `.__init__(rate, refresh, pattern, cpw, drift, reanchor, free_running, beat_clock, rebuild_fn)`
+  - Method `.run(seconds, step, max_iters)`
+  - Method `.on_sets()`
+  - Method `.off_sets()`
+- `class TestStrobeScheduler`
+  - Method `.test_flips_exactos_ritmo_y_fase()`
+  - Method `.test_flips_tardios_se_saltan_sin_rafa()`
+  - Method `.test_reanclaje_absorbe_deriva_del_cristal()` - *Audio 0.5% más rápido que el reloj del sistema: con re-anclaje el*
+  - Method `.test_sin_reanclaje_la_deriva_se_acumula()` - *Contraste: sin re-anclaje (intervalo enorme) la fase se desvía más.*
+  - Method `.test_audio_detenido_sin_flips()`
+  - Method `.test_rebuild_de_patron_en_reanclaje()` - *El scheduler puede cambiar de patrón en el re-anclaje (rampas).*
+  - Method `.test_modo_libre_armonica_sin_jitter()` - *Armónico: patrón de 3 fotogramas a R/3 exacto, anclado al pulso.*
+- `class TestLatenessMonitor`
+  - Method `.test_umbral_de_aborto()`
+  - Method `.test_ventana_desliza()`
+  - Method `.test_pocas_muestras_no_abortan()`
+
+---
+
 ### [`tests/verify_dsp_ramp.py`](tests/verify_dsp_ramp.py)
 **Size**: `122` lines (`4030` bytes)
 
@@ -402,5 +479,51 @@
 **Functions:**
 - `def validate_signal(audio_data, sample_rate, expected_left_hz, expected_right_hz, duration_s, tolerance_hz)` - *Validates the generated audio signal for scientific accuracy.*
 - `def validate_export(generator_class, config, duration_s)` - *Validates that the exported WAV file matches the in-memory generation.*
+
+---
+
+### [`visual.py`](visual.py)
+**Size**: `678` lines (`26543` bytes)
+
+**Classes:**
+- `class VisualCapability` - *Gate result for a requested rate against a measured refresh.*
+  - Property `.available`
+- `class BeatClock` - *Accumulated cycles of the audio pulse as a function of audio time.*
+  - Method `.__init__(rate_hz, start_hz, end_hz, ramp_s)`
+  - Method `.rate_at(t)`
+  - Method `.cycles(t)`
+  - Method `.next_boundary(t)` - *Audio time of the next pulse boundary after t.*
+- `class StrobeScheduler` - *Strobe scheduler anchored to the audio clock (samples_generated).*
+  - Method `.__init__(pattern, refresh_hz, on_flip, clock, get_audio_time, beat_clock, cycles_per_window, free_running, reanchor_interval_s, rebuild_fn)`
+  - Method `.start()` - *Starts aligned to the next audio pulse boundary.*
+  - Method `.stop()`
+  - Method `._snap(sys_now, audio_now)`
+  - Method `._audio_est(sys_now)`
+  - Method `._pos_frames(audio_t)` - *Position (float, in frames) inside the pattern window.*
+  - Method `._state_at(audio_t)`
+  - Method `._next_crossing(sys_now)` - *Deadline (clock time) of the next pattern state change.*
+  - Method `.poll(now)` - *Processes due flips at `now`; returns the next deadline.*
+- `class LatenessMonitor` - *Aborts when median lateness exceeds a threshold (fork design decision 7).*
+  - Method `.__init__(frame_period_s, ratio, window_s, min_samples)`
+  - Method `.record(now, lateness_s)`
+  - Method `.should_abort()`
+
+**Functions:**
+- `def pulse_train_coefficient(k, duty)` - *Magnitude of the k-th coefficient of a rectangular pulse train of duty d.*
+- `def harmonic_amplitude_ratio(duty, k)` - *|c_k| / |c_1| for a pulse train of the given duty (duty 1/3, k=2 -> 0.5).*
+- `def _exact_pattern(n)` - *Pattern of n frames, ~50% duty, starting at the pulse onset.*
+- `def _window_pattern(w_frames, cycles)` - *Periodic pattern of w_frames with `cycles` pulses (~50% duty).*
+- `def _harmonic_pattern(n)` - *Pattern of n frames, ~1/3 duty (n=3 -> 1 on, 2 off).*
+- `def harmonic_candidate(rate_hz, refresh_hz, tolerance_pct)` - *Finds n such that the 2nd harmonic of pulses at R/n (duty 1/3) approximates rate.*
+- `def best_substitute(refresh_hz)` - *Highest exact rate supported (R/2, 2 frames, 50% duty).*
+- `def visual_capability(rate_hz, refresh_hz, harmonics_enabled, tolerance_pct)` - *Classifies `rate_hz` on a screen of measured `refresh_hz`.*
+- `def ramp_gate_capability(start_hz, end_hz, refresh_hz, harmonics_enabled, n_points, tolerance_pct)` - *Ramp gate: evaluated at the WORST point of the sweep (fork tasks 1.3).*
+- `def capability_label(cap, requested_hz)` - *Status label for the button/UI (with power feedback).*
+- `def intensity_note(intensity)` - *Power note for the chosen intensity (specs: feedback).*
+- `def compute_refresh_stats(timestamps)` - *Refresh statistics from presentation timestamps.*
+- `def _percentile(sortedable, pct)` - *Percentile by linear interpolation (equivalent to numpy p95).*
+- `def validate_refresh_measurement(refresh_hz, jitter_ms)` - *Validates measurement plausibility. Returns (ok, confidence).*
+- `def parse_xrandr_refresh_hz(text)` - *Refresh of the output marked as current (`*`) in `xrandr --current`.*
+- `def merge_visual_config(cfg)` - *Merges the "visual" section of config with default values.*
 
 ---
