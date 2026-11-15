@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794772773.5665982,
+    "updated_at": 1794772831.8264158,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,30 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:post-audit-hardening",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/5] Plan: harden post-audit code \u2014 combined-label helper, duration policy constants, export cancellation, corrupt-config quarantine, boundary tests, CI workflow",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794768444.49455,
-      "timestamp_str": "2026-11-15 21:47:24",
-      "agent": "claude:node1",
-      "impact_assessment": {
-        "why": "Post-delivery analysis of HEAD found acknowledged-but-unimplemented gaps (cancel-event comment in export loop), duplicated combined-label logic at 3 call sites, two disagreeing duration policies, silent loss of corrupt config, and missing boundary tests for rules added in 510d2da",
-        "benefits": "Single source of truth for category labels and duration bounds; exports no longer outlive the app or produce unrequested files; corrupt config preserved for recovery; new validation rules regression-protected; CI runs the 4s suite on every push",
-        "risks": "contract: _run_export_thread gains optional cancel_event param, callers checked (1 site) -- no other consumers; dependency: CI installs requirements.txt pinned already -- no new deps; concurrency: cancel event set from Tk main thread while export thread polls -- threading.Event is the safe primitive, file write happens once after loop; state: quarantine renames a corrupt config to .corrupt -- never overwrites an existing quarantine without timestamp; tests must not spawn audio threads (sounddevice mocked/stubbed as in existing suite)",
-        "mitigation": "Failing-first tests before each behavior change; keep UI-layer reject and thread clamp aligned via shared constants; cancellation only stops file writing, no partial WAV; quarantine uses timestamped suffix; CI workflow uses windows-latest to match the desktop target"
-      },
-      "plan_digest": "f3cbcdc332cd405b3abb8ec5897fde98fee3ec19c788709884aa62a4f667c03a",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:post-audit-hardening",
       "phase": "phase 3",
@@ -419,6 +395,23 @@
       "timestamp_str": "2026-11-15 22:59:33",
       "agent": "claude:node1",
       "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[5/6] digest re-record after hygiene allows: fresh capture pixel-identical to the reviewed state. checklists: passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794772831.8264158,
+      "timestamp_str": "2026-11-15 23:00:31",
+      "agent": "claude:node1",
       "workspaces": [
         {
           "name": "NeuralBeat",
