@@ -1,0 +1,21 @@
+[
+  {
+    "schema": 1,
+    "surface": "app",
+    "mode": "visual",
+    "visual_change": true,
+    "changed_paths": [],
+    "no_visual_reason": "",
+    "no_change_reason": "reviewed running main window via PrintWindow capture (1125x655, all panels render) and the committed UI hunks of 510d2da; 87 tests passed",
+    "baseline_commit": "ffec710deccbd15664152e773ae1b15f2be65e58",
+    "contract_hash": "68a10fc78336e4c0ac11d6154f2b819baefdbe517a4234a7bb06f0d75ae93885",
+    "started_at": 1794767728.3083122,
+    "finished_at": 1794768121.41023,
+    "strikes": 0,
+    "reviewer": "claude:node1",
+    "allowed_removals": [],
+    "final_snapshot_digest": "",
+    "final_snapshot_entries": 0,
+    "surface_digest": "79912bed12f0e224d572881b9a8d1b8c185f70b34480a2be2266ec1cb6752bab"
+  }
+]

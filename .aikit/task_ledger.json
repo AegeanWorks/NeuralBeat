@@ -3,36 +3,29 @@
   "active_task": {
     "task_id": "neuralbeat:waves-0-30",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
-    "updated_at": 1793723101.5338554,
-    "owner": "kilo:neuralbeat-audit",
+    "active_phase": 5,
+    "status": "completed",
+    "updated_at": 1794768146.4858744,
+    "owner": "claude:node1",
     "started_by": "kilo:neuralbeat-audit",
-    "continuations": []
+    "continuations": [
+      {
+        "agent": "claude:node1",
+        "from": "kilo:neuralbeat-audit",
+        "at": 1794768146.4858744
+      }
+    ],
+    "workspaces": [
+      {
+        "name": "NeuralBeat",
+        "path": "projects/NeuralBeat"
+      }
+    ],
+    "completed_at": 1794768146.9179637,
+    "completed_head": "ffec710deccbd15664152e773ae1b15f2be65e58",
+    "completed_tree": "20a02f281242a1e57f20d34579d9adaeb5a9d4fc"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-6",
-      "phase": "phase 5",
-      "phase_num": 5,
-      "description": "checklists: passed; README theme list and UI surface contract audited, 2/2 hunks reviewed, 0 findings; tests 81 passed; gates 4/4",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793295450.9809897,
-      "timestamp_str": "2026-10-29 20:37:30",
-      "agent": "opencode:reforge-fix"
-    },
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 36",
-      "phase_num": 3,
-      "description": "Reforge stage 36: window 108, 3 commit(s), 2 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1793456549.4184983,
-      "timestamp_str": "2026-10-31 17:22:29",
-      "agent": "github"
-    },
     {
       "task_id": "reforge:run-7",
       "phase": "reforge stage 36",
@@ -245,6 +238,41 @@
       "timestamp": 1793723101.5338554,
       "timestamp_str": "2026-11-03 19:25:01",
       "agent": "kilo:neuralbeat-audit"
+    },
+    {
+      "task_id": "neuralbeat:waves-0-30",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Resumed waves 0,10,20,30 audit: fix committed at 510d2da (export routing, pulse continuity, preset handling); license link docs committed at 72f1c56; UI surface closed via reviewed PrintWindow capture; codebase map refreshed; tests 87 passed; check: gates 4/4 (strict)",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794768146.4858744,
+      "timestamp_str": "2026-11-15 21:42:26",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ],
+      "continued_from": "kilo:neuralbeat-audit"
+    },
+    {
+      "task_id": "neuralbeat:waves-0-30",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'neuralbeat:waves-0-30' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794768146.9661093,
+      "timestamp_str": "2026-11-15 21:42:26",
+      "agent": "claude:node1",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
