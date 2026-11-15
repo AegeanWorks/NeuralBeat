@@ -5,7 +5,7 @@
     "last_phase": "phase 2",
     "active_phase": 2,
     "status": "in_progress",
-    "updated_at": 1794771239.6577806,
+    "updated_at": 1794771288.0269775,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,17 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-7",
-      "phase": "reforge stage 43",
-      "phase_num": 3,
-      "description": "Reforge stage 43: stage 43 host review reviewed; run completed; coverage 1/1",
-      "files_affected": [],
-      "status": "completed",
-      "timestamp": 1793456687.7732787,
-      "timestamp_str": "2026-10-31 17:24:47",
-      "agent": "github"
-    },
     {
       "task_id": "reforge:run-6",
       "phase": "completed",
@@ -384,6 +373,23 @@
       "timestamp_str": "2026-11-15 22:33:59",
       "agent": "claude:node1",
       "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[2/6] bookkeeping only: ledger/map sync after milestone commit. checklists: passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794771288.0269775,
+      "timestamp_str": "2026-11-15 22:34:48",
+      "agent": "claude:node1",
       "workspaces": [
         {
           "name": "NeuralBeat",
