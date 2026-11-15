@@ -2,10 +2,10 @@
   "version": 1,
   "active_task": {
     "task_id": "neuralbeat:strobe-adoption",
-    "last_phase": "phase 2",
-    "active_phase": 2,
+    "last_phase": "phase 4",
+    "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794771288.0269775,
+    "updated_at": 1794771502.0008154,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,17 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-6",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'reforge:run-6' completed successfully.",
-      "status": "completed",
-      "timestamp": 1793456741.644416,
-      "timestamp_str": "2026-10-31 17:25:41",
-      "agent": "copilot:neuralbeat",
-      "continued_from": "opencode:reforge-fix"
-    },
     {
       "task_id": "neuralbeat:waves-0-30",
       "phase": "phase 2",
@@ -390,6 +379,26 @@
       "timestamp": 1794771288.0269775,
       "timestamp_str": "2026-11-15 22:34:48",
       "agent": "claude:node1",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[3/6] cycle A: SourceCode wiring part 1 - visual state globals, photosensitive warning text (EN), config accessors, xrandr probe (timeout 3s), rate request resolution, audio-time clock, capability computation; ui begin/verify/finish done. checklists: passed",
+      "files_affected": [
+        "SourceCode.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794771502.0008154,
+      "timestamp_str": "2026-11-15 22:38:22",
+      "agent": "claude:node1",
+      "checklists": "passed",
       "workspaces": [
         {
           "name": "NeuralBeat",

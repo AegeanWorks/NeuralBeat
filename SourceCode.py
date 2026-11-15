@@ -9,6 +9,7 @@ from tkinter import filedialog
 import logging
 import threading
 import os
+import subprocess
 from dataclasses import dataclass
 
 import numpy as np
@@ -24,6 +25,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import presets
 import verification
+import visual
 
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
@@ -61,6 +63,47 @@ noise_type_var = None
 noise_volume_entry = None
 status_var = None
 ramp_enabled_var = None
+
+# Visual strobe mode state (the window and scheduler live on the Tk thread).
+# Widget/variable globals are declared at module level (same pattern as
+# beat_type_var/osc_merge_var) so tests can patch them before any window
+# exists.
+visual_mode_active = False
+visual_window = None
+visual_scheduler = None
+visual_after_id = None
+visual_lateness_monitor = None
+visual_active_cap = None
+visual_active_gen = None
+visual_active_req = None
+visual_beat_clock = None
+visual_active_status = None
+visual_last_reason = None
+visual_status_last_refresh = 0.0
+visual_toggle_button = None
+visual_status_label = None
+visual_intensity_var = None
+visual_harmonics_var = None
+
+STATE_BOOTSTYLES = {
+    "exacto": "success",
+    "aproximado": "warning",
+    "armonico": "info",
+    "no_disponible": "danger",
+}
+
+PHOTOSENSITIVE_WARNING = (
+    "PHOTOSENSITIVE SAFETY WARNING\n\n"
+    "Visual mode produces full-screen light flashes.\n"
+    "Flashing lights can trigger seizures in people with photosensitive\n"
+    "epilepsy. The risk is highest in the 15-25 Hz band (which includes the\n"
+    "16 Hz preset bundled with this app).\n\n"
+    "Do not use it if you or someone in your family has epilepsy or a\n"
+    "sensitivity to flashing lights; consult a doctor first.\n\n"
+    "At any discomfort, leave the mode immediately: any key or click exits.\n\n"
+    "NeuralBeat and its visual mode are NOT medical devices or treatments.\n\n"
+    "Do you understand the risk and want to enable visual mode?"
+)
 
 # Defaults
 ramp_carrier_hz = 432.0
@@ -828,6 +871,111 @@ def stop_audio():
         logger.error(f"Error stopping audio: {e}", exc_info=True)
 
     play_mode = "manual"
+
+
+# =============================================================================
+# Visual Strobe Mode
+# =============================================================================
+
+def get_visual_settings() -> dict:
+    """The visual section of config merged with defaults (backwards compatible)."""
+    return visual.merge_visual_config(config)
+
+
+def save_visual_setting(key, value) -> None:
+    """Persist one key of the visual section in ~/.neuralbeat/config.json."""
+    v = config.get("visual") if isinstance(config.get("visual"), dict) else {}
+    v[key] = value
+    config["visual"] = v
+    save_config(config)
+
+
+def get_visual_refresh_hz() -> float:
+    """Calibrated screen refresh (conservative default when absent)."""
+    v = get_visual_settings()
+    if v["refresh_hz"] and v["refresh_hz"] > 0:
+        return v["refresh_hz"]
+    return visual.DEFAULT_REFRESH_HZ
+
+
+def probe_system_refresh_hz():
+    """Nominal refresh reported by the system (xrandr). None when unavailable.
+
+    Not a measurement: it only avoids the 60 Hz default when real calibration
+    is unreliable (e.g. a compositor that ignores deadlines).
+    """
+    try:
+        out = subprocess.run(["xrandr", "--current"], capture_output=True,
+                             text=True, timeout=3.0).stdout
+    except Exception:
+        logger.info("No xrandr available for the system refresh", exc_info=True)
+        return None
+    return visual.parse_xrandr_refresh_hz(out)
+
+
+def get_visual_rate_request() -> dict:
+    """Resolves the requested visual rhythm from the UI state.
+
+    Returns mode ("manual"/"ramp"), beat_type and rate_hz: binaural uses
+    |right-left|, isochronic uses the pulse rate, and a ramp uses the WORST
+    point of the sweep (gate). Raises ValueError when inputs are not numeric.
+    """
+    bt = beat_type_var.get() if beat_type_var else "binaural"
+    if ramp_enabled_var.get():
+        try:
+            start = float(start_beat_entry.get())
+            end = float(end_beat_entry.get())
+            minutes = float(ramp_minutes_entry.get())
+        except (ValueError, TypeError):
+            raise ValueError("Ramp settings must be numeric.")
+        worst = max(abs(start), abs(end))
+        return {
+            "mode": "ramp",
+            "beat_type": bt,
+            "rate_hz": worst,
+            "start_hz": start,
+            "end_hz": end,
+            "ramp_s": max(0.0, minutes * 60.0),
+        }
+    try:
+        left = float(left_frequency_entry.get())
+        right = float(right_frequency_entry.get())
+    except (ValueError, TypeError):
+        raise ValueError("Frequencies must be numeric.")
+    if bt == "isochronic":
+        rate = abs(left)
+    else:
+        rate = abs(right - left)
+    return {
+        "mode": "manual",
+        "beat_type": bt,
+        "rate_hz": rate,
+        "start_hz": None,
+        "end_hz": None,
+        "ramp_s": None,
+    }
+
+
+def get_visual_audio_time() -> float:
+    """Audio time of the active stream (master clock: samples_generated)."""
+    g = audio_engine.generator
+    c = audio_engine.current_config
+    if g is None or c is None:
+        return 0.0
+    return g.samples_generated / c.sample_rate
+
+
+def compute_visual_capability():
+    """(request, VisualCapability) from the UI state and current calibration."""
+    req = get_visual_rate_request()
+    refresh = get_visual_refresh_hz()
+    harmonics = get_visual_settings()["harmonics_enabled"]
+    if req["mode"] == "ramp":
+        cap = visual.ramp_gate_capability(
+            req["start_hz"], req["end_hz"], refresh, harmonics)
+    else:
+        cap = visual.visual_capability(req["rate_hz"], refresh, harmonics)
+    return req, cap
 
 
 # =============================================================================
