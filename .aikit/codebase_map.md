@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `21`
-- **Total Classes**: `59`
+- **Total Python Modules**: `22`
+- **Total Classes**: `61`
 - **Total Top-Level Functions**: `72`
-- **Total Class Methods**: `249`
-- **Total Source Lines**: `6746`
+- **Total Class Methods**: `254`
+- **Total Source Lines**: `6843`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`21` module(s))
+- **Indexed**: python (`22` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -317,6 +317,22 @@
   - Method `.test_brainwave_ranges()` - *Test brainwave ranges are defined.*
   - Method `.test_frequency_ranges_valid()` - *Test brainwave frequency ranges are valid.*
   - Method `.test_presets_not_empty()` - *Test all preset lists are populated.*
+
+---
+
+### [`tests/test_ui_layout.py`](tests/test_ui_layout.py)
+> *Comportamiento de configuracion de la UI en SourceCode.*
+
+**Size**: `97` lines (`3868` bytes)
+
+**Classes:**
+- `class TestSetThemeMenuVar` - *set_theme guarda el tema y refleja la eleccion en el menu Theme.*
+  - Method `.setUp()`
+  - Method `.test_set_theme_actualiza_la_var_del_menu(_mb, save_mock)`
+  - Method `.test_set_theme_error_no_toca_la_var(mb, save_mock)`
+- `class TestSetOscPaletteVar` - *set_osc_colors guarda la paleta y refleja la eleccion en el menu.*
+  - Method `.setUp()`
+  - Method `.test_set_osc_colors_actualiza_la_var_del_menu(save_mock)`
 
 ---
 
