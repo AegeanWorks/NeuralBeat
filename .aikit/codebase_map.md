@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `17`
+- **Total Python Modules**: `18`
 - **Total Classes**: `36`
 - **Total Top-Level Functions**: `38`
 - **Total Class Methods**: `157`
-- **Total Source Lines**: `4357`
+- **Total Source Lines**: `4388`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`17` module(s))
+- **Indexed**: python (`18` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -100,6 +100,13 @@
 
 ---
 
+### [`tests/conftest.py`](tests/conftest.py)
+> *Conftest: deterministic import environment for the whole test suite.*
+
+**Size**: `42` lines (`1728` bytes)
+
+---
+
 ### [`tests/test_audio_config.py`](tests/test_audio_config.py)
 > *Test AudioConfig dataclass and utility functions.*
 
@@ -135,7 +142,7 @@
 ### [`tests/test_audio_engine.py`](tests/test_audio_engine.py)
 > *Test the AudioEngine class from SourceCode.py.*
 
-**Size**: `131` lines (`4140` bytes)
+**Size**: `128` lines (`4112` bytes)
 
 **Classes:**
 - `class TestAudioEngine` - *Test the AudioEngine class.*
@@ -232,7 +239,7 @@
 ### [`tests/test_dsp_generators.py`](tests/test_dsp_generators.py)
 > *Test the DSP generator classes (BinauralGenerator, IsochronicGenerator).*
 
-**Size**: `186` lines (`6924` bytes)
+**Size**: `191` lines (`7241` bytes)
 
 **Classes:**
 - `class TestBinauralGenerator` - *Tests for the BinauralGenerator class.*
@@ -299,7 +306,7 @@
 ### [`tests/test_ui_logic.py`](tests/test_ui_logic.py)
 > *Test UI logic functions from SourceCode.py that don't require a live UI.*
 
-**Size**: `358` lines (`15723` bytes)
+**Size**: `350` lines (`15525` bytes)
 
 **Classes:**
 - `class TestUiLogic` - *Test UI-related logic functions.*
@@ -329,7 +336,7 @@
 ### [`tests/test_utils.py`](tests/test_utils.py)
 > *Test utility functions from SourceCode.py.*
 
-**Size**: `108` lines (`4132` bytes)
+**Size**: `103` lines (`4070` bytes)
 
 **Classes:**
 - `class TestUtils` - *Test utility functions.*
