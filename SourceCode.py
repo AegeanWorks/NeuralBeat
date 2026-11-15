@@ -152,6 +152,24 @@ class NoiseGenerator:
 
 VALID_THEMES = ("darkly", "superhero", "flatly")
 
+# Export duration policy shared by the UI validation and the export thread clamp.
+EXPORT_MIN_DURATION_S = 1.0
+EXPORT_MAX_DURATION_S = 3600.0
+
+def is_combined_beat_label(category: str) -> bool:
+    """True when the label carries both beat words (combined UI label)."""
+    c = str(category).strip().lower()
+    return "binaural" in c and "monaural" in c
+
+def _quarantine_corrupt_config() -> None:
+    """Moves an unparsable config file aside so a later save can recreate it."""
+    target = CONFIG_PATH.with_name(CONFIG_PATH.name + ".corrupt")
+    if target.exists():
+        target = CONFIG_PATH.with_name(
+            f"{CONFIG_PATH.name}.{time.strftime('%Y%m%d-%H%M%S')}.corrupt")
+    CONFIG_PATH.replace(target)
+    logger.error(f"Corrupt config {CONFIG_PATH} quarantined to {target}.")
+
 def load_config() -> dict:
     """Loads configuration from the JSON file."""
     try:
@@ -160,6 +178,14 @@ def load_config() -> dict:
             if isinstance(data, dict):
                 return data
             logger.error(f"Config {CONFIG_PATH} root must be an object, ignoring.")
+    except json.JSONDecodeError:
+        # Preserve the unreadable file for recovery instead of letting the
+        # next save_config silently overwrite it.
+        try:
+            _quarantine_corrupt_config()
+        except Exception:
+            logger.error(f"Could not quarantine corrupt config {CONFIG_PATH}", exc_info=True)
+        return {}
     except Exception:
         logger.error(f"Error loading config from {CONFIG_PATH}", exc_info=True)
     return {}
@@ -184,15 +210,13 @@ def _normalize_category(category: str) -> str:
     c = str(category).strip().lower()
     if "isochronic" in c:
         return "Isochronic"
-    has_binaural = "binaural" in c
-    has_monaural = "monaural" in c
-    if has_binaural and has_monaural:
+    if is_combined_beat_label(c):
         # Combined UI label "Binaural Beat / Monaural Beat" - caller decides
         # based on frequencies; default to Binaural for backward compat.
         return "Binaural"
-    if has_monaural:
+    if "monaural" in c:
         return "Monaural"
-    if has_binaural:
+    if "binaural" in c:
         return "Binaural"
     raise ValueError("Category must be 'Binaural Beat / Monaural Beat' or 'Isochronic Tone'")
 
@@ -966,12 +990,17 @@ def toggle_oscilloscope_window():
     visualizer_canvas = FigureCanvasTkAgg(fig, master=osc_window)
     visualizer_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error):
+# Set by on_close so the running export thread cancels instead of outliving
+# the window; cleared when a new export starts.
+export_cancel_event = threading.Event()
+
+def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error, cancel_event=None):
     """Background thread function for exporting audio to a WAV file."""
     try:
         sample_rate = cfg.sample_rate
-        # Clamp to 1s..60min to avoid accidental multi-GB exports.
-        duration = max(1.0, min(float(duration), 3600.0))
+        # Clamp to 1s..60min to avoid accidental multi-GB exports; mirrors the
+        # UI validation via the shared duration policy constants.
+        duration = max(EXPORT_MIN_DURATION_S, min(float(duration), EXPORT_MAX_DURATION_S))
         total_frames = int(duration * sample_rate)
         block_size = 4096
 
@@ -984,8 +1013,11 @@ def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, prog
         all_audio = []
 
         while frames_written < total_frames:
-            # Check for window close (cancellation) via event or shared flag?
-            # For simplicity, we just check if window exists via main thread callback
+            # A set event (currently only from on_close) cancels the export:
+            # no file is written and no completion callback fires.
+            if cancel_event is not None and cancel_event.is_set():
+                logger.info("Export cancelled; no file written.")
+                return
 
             chunk_size = min(block_size, total_frames - frames_written)
             audio_block = generator.generate_block(chunk_size)
@@ -1035,10 +1067,10 @@ def export_audio_file():
             duration = float(duration_str)
             if duration <= 0:
                 raise ValueError
-            if duration > 3600:
-                messagebox.showerror("Input Error", "Duration must be 1-3600 seconds (max 60 min) to avoid huge files.")
+            if duration > EXPORT_MAX_DURATION_S:
+                messagebox.showerror("Input Error", f"Duration must be 1-{int(EXPORT_MAX_DURATION_S)} seconds (max 60 min) to avoid huge files.")
                 return
-            if duration < 1:
+            if duration < EXPORT_MIN_DURATION_S:
                 messagebox.showerror("Input Error", "Duration must be at least 1 second.")
                 return
         except ValueError:
@@ -1081,7 +1113,8 @@ def export_audio_file():
             except Exception:
                 logger.debug("Could not finalize the export error dialog", exc_info=True)
 
-        t = threading.Thread(target=_run_export_thread, args=(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error))
+        export_cancel_event.clear()
+        t = threading.Thread(target=_run_export_thread, args=(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error, export_cancel_event))
         t.start()
 
     except ValueError as e:
@@ -1311,10 +1344,9 @@ def save_current_as_preset():
             return
 
         category = preset_category_var.get().strip()
-        c_low = category.lower()
         # Combined UI label carries both words; auto-split so Monaural user
         # presets are actually reachable (left == right -> Monaural).
-        if ("binaural" in c_low and "monaural" in c_low) or not category:
+        if is_combined_beat_label(category) or not category:
             category = "Monaural" if abs(right_hz - left_hz) <= 1e-9 else "Binaural"
 
         if _normalize_category(category) == "Isochronic":
@@ -1347,8 +1379,7 @@ def delete_preset():
             raise ValueError("Enter the preset name to remove (must match exactly).")
 
         if messagebox.askyesno("Remove Preset", f"Remove user preset '{label}' from {category}?"):
-            c_low = category.lower()
-            if "binaural" in c_low and "monaural" in c_low:
+            if is_combined_beat_label(category):
                 # Combined UI label: try both stores so Monaural deletions work.
                 removed = remove_user_preset(category="Binaural", label=label)
                 if not removed:
@@ -1457,6 +1488,7 @@ def update_live_status():
 
 def on_close():
     try:
+        export_cancel_event.set()
         stop_audio()
     finally:
         try:
