@@ -1,16 +1,20 @@
 # Codebase Map & Symbol Catalog 🗺️
 
 > **AUTO-GENERATED & VERIFIED BY `scripts/update_knowledge_base.py`**
-> This document provides an automated, up-to-date registry of all modules, classes, and exported functions across this repository.
+> This document catalogues Python modules, classes, and exported functions. See Map Coverage for any stack it does not index.
 
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `16`
-- **Total Classes**: `28`
+- **Total Python Modules**: `17`
+- **Total Classes**: `31`
 - **Total Top-Level Functions**: `36`
-- **Total Class Methods**: `136`
-- **Total Source Lines**: `3924`
+- **Total Class Methods**: `142`
+- **Total Source Lines**: `4129`
+
+## 🧭 Map Coverage
+- **Indexed**: python (`17` module(s))
+- **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
 
@@ -32,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `1741` lines (`68177` bytes)
+**Size**: `1806` lines (`71770` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -159,7 +163,7 @@
 ### [`tests/test_config.py`](tests/test_config.py)
 > *Test configuration management functions.*
 
-**Size**: `190` lines (`7040` bytes)
+**Size**: `191` lines (`7142` bytes)
 
 **Classes:**
 - `class TestConfig` - *Test configuration management functions.*
@@ -183,14 +187,14 @@
 ### [`tests/test_config_presets.py`](tests/test_config_presets.py)
 > *Test config and preset management functions.*
 
-**Size**: `349` lines (`12136` bytes)
+**Size**: `351` lines (`12306` bytes)
 
 **Classes:**
 - `class TestNormalizeCategory` - *Test _normalize_category function.*
   - Method `.setUpClass()`
   - Method `.tearDownClass()`
   - Method `.test_normalize_binaural()` - *Test normalization of binaural.*
-  - Method `.test_normalize_monaural()` - *Test normalization maps monaural to Binaural.*
+  - Method `.test_normalize_monaural()` - *Test normalization keeps monaural distinct.*
   - Method `.test_normalize_isochronic()` - *Test normalization of isochronic.*
   - Method `.test_normalize_invalid()` - *Test invalid category raises ValueError.*
 - `class TestGetUserPresets` - *Test get_user_presets function.*
@@ -322,6 +326,24 @@
   - Method `.test_validate_audio_params_invalid_vol()` - *Test validate_audio_params with invalid volumes.*
   - Method `.test_validate_audio_params_invalid_duration()` - *Test validate_audio_params with invalid duration.*
   - Method `.test_compute_ramped_beat_hz()` - *Test _compute_ramped_beat_hz calculation.*
+
+---
+
+### [`tests/test_verify_fixes.py`](tests/test_verify_fixes.py)
+> *Regression tests for verify/analyze fixes (export routing, pulse continuity, config).*
+
+**Size**: `137` lines (`5590` bytes)
+
+**Classes:**
+- `class TestExportRouting`
+  - Method `._make_cfg(beat_type)`
+  - Method `.test_export_uses_isochronic_generator()`
+  - Method `.test_export_uses_binaural_generator()`
+- `class TestIsochronicPulseContinuity`
+  - Method `.test_ramp_pulse_phase_continuous()`
+- `class TestConfigRobustness`
+  - Method `.test_load_config_rejects_list_root()`
+  - Method `.test_import_rejects_bad_theme()`
 
 ---
 
