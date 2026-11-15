@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794772059.6088347,
+    "updated_at": 1794772603.2027583,
     "owner": "claude:node1",
     "started_by": "claude:node1",
     "continuations": [],
@@ -17,25 +17,6 @@
     ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:waves-0-30",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/4] Resumed waves 0,10,20,30 audit: fix committed at 510d2da (export routing, pulse continuity, preset handling); license link docs committed at 72f1c56; UI surface closed via reviewed PrintWindow capture; codebase map refreshed; tests 87 passed; check: gates 4/4 (strict)",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794768146.4858744,
-      "timestamp_str": "2026-11-15 21:42:26",
-      "agent": "claude:node1",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ],
-      "continued_from": "kilo:neuralbeat-audit"
-    },
     {
       "task_id": "neuralbeat:waves-0-30",
       "phase": "completed",
@@ -411,6 +392,26 @@
       "timestamp_str": "2026-11-15 22:47:39",
       "agent": "claude:node1",
       "head": "7ecf8a08a20f24115e0dc263f63c2b7075b2de84",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:strobe-adoption",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[3/6] cycle D: visual_poll (deadline loop, audio watchdog, lateness abort), close_visual_mode (focus restore), hooks in stop_audio/play_audio/apply_preset/on_close, main(): Visual settings cascade, bottom-bar row with toggle + status + disclaimer, trace_add/KeyRelease bindings. Visual review recorded via pre/post pixel diff. checklists: passed",
+      "files_affected": [
+        "SourceCode.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1794772603.2027583,
+      "timestamp_str": "2026-11-15 22:56:43",
+      "agent": "claude:node1",
       "checklists": "passed",
       "workspaces": [
         {

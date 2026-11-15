@@ -850,6 +850,10 @@ def stop_audio():
     global live_status_after_id
     global play_mode
 
+    # Visual mode depends on playing audio: close it before stopping
+    if visual_mode_active:
+        close_visual_mode("audio stopped")
+
     # Stop UI update loop
     if live_status_after_id is not None:
         try:
@@ -1290,6 +1294,102 @@ def start_visual_mode(cap, req):
     visual_poll()
 
 
+def visual_poll():
+    """Tk loop of the visual mode: deadline flips, audio watchdog and an
+    automatic abort when the achieved rate drops below the requested one."""
+    global visual_after_id, visual_active_status, visual_status_last_refresh
+    if not visual_mode_active:
+        visual_after_id = None
+        return
+    # The audio stopped, finished or changed session -> immediate close
+    gen = visual_active_gen
+    if ((not audio_engine.is_playing) or (audio_engine.generator is not gen)
+            or gen.is_finished):
+        close_visual_mode("the audio stopped or finished")
+        return
+    sched = visual_scheduler
+    if sched is None:
+        close_visual_mode()
+        return
+    now = time.perf_counter()
+    next_deadline = sched.poll()
+    if next_deadline is None:
+        close_visual_mode("the audio is not advancing")
+        return
+    # Automatic abort: median lateness above 15% of the frame period
+    lateness = sched.last_flip_lateness
+    if lateness is not None and visual_lateness_monitor is not None:
+        visual_lateness_monitor.record(now, lateness)
+        sched.last_flip_lateness = None
+        if visual_lateness_monitor.should_abort():
+            close_visual_mode(
+                "closed: achieved rate insufficient (overloaded compositor)")
+            return
+    # Ramp: refresh the current rate in the label (~2 Hz)
+    try:
+        if (visual_active_req is not None
+                and visual_active_req["mode"] == "ramp"
+                and visual_beat_clock is not None
+                and now - visual_status_last_refresh > 0.5):
+            visual_status_last_refresh = now
+            cur = visual_beat_clock.rate_at(get_visual_audio_time())
+            cap_now = visual.visual_capability(cur, get_visual_refresh_hz())
+            visual_active_status = (
+                f"Visual active: ramp at {cur:.2f} Hz - "
+                f"{visual.capability_label(cap_now, cur)} - "
+                f"exit with any key/click")
+            update_visual_button()
+    except Exception:
+        logger.debug("Visual status refresh failed", exc_info=True)
+    delay_ms = 100.0
+    try:
+        delay_ms = max(1.0, min(100.0,
+                                (next_deadline - time.perf_counter()) * 1000.0 - 1.0))
+    except Exception:
+        pass
+    visual_after_id = root.after(int(delay_ms), visual_poll)
+
+
+def close_visual_mode(reason=None):
+    """Closes the visual mode and restores the main window (focus included)."""
+    global visual_mode_active, visual_window, visual_scheduler, visual_after_id
+    global visual_active_gen, visual_active_cap, visual_active_req
+    global visual_beat_clock, visual_active_status, visual_last_reason
+    if visual_after_id is not None:
+        try:
+            root.after_cancel(visual_after_id)
+        except Exception:
+            pass
+        visual_after_id = None
+    if visual_scheduler is not None:
+        visual_scheduler.stop()
+        visual_scheduler = None
+    if visual_window is not None:
+        win = visual_window
+        visual_window = None
+        try:
+            win.destroy()
+        except Exception:
+            pass
+    was_active = visual_mode_active
+    visual_mode_active = False
+    visual_active_gen = None
+    visual_active_cap = None
+    visual_active_req = None
+    visual_beat_clock = None
+    visual_active_status = None
+    if reason:
+        visual_last_reason = f"visual mode {reason}"
+        logger.info("Visual mode: %s", reason)
+    if was_active:
+        try:
+            root.deiconify()
+            root.focus_set()
+        except Exception:
+            pass
+    update_visual_button()
+
+
 # =============================================================================
 # UI & Interaction
 # =============================================================================
@@ -1614,6 +1714,9 @@ def play_audio():
 
         if live_status_after_id is None:
             update_live_status()
+
+        # The visual gate can change (ramp mode rewrites the entries)
+        update_visual_button()
     except ValueError as e:
          messagebox.showerror("Input Error", str(e))
     except Exception as e:
@@ -1762,6 +1865,10 @@ def apply_preset(left_hz: float = 0, right_hz: float = 0, category: str = "Binau
         right_frequency_entry.insert(0, str(right_hz))
         if beat_type_var:
             beat_type_var.set("binaural")
+
+    # The visual gate state depends on the active rhythm
+    update_visual_button()
+
 
 def build_preset_buttons():
     allp = get_all_presets()
@@ -1948,6 +2055,8 @@ def update_live_status():
 
 def on_close():
     try:
+        if visual_mode_active:
+            close_visual_mode()
         export_cancel_event.set()
         stop_audio()
     finally:
@@ -1994,6 +2103,8 @@ def main():
     global preset_name_entry, preset_category_var
     global carrier_entry, start_beat_entry, end_beat_entry, ramp_minutes_entry, noise_type_var, noise_volume_entry
     global status_var, ramp_enabled_var, osc_merge_var, beat_type_var
+    global visual_toggle_button, visual_status_label, visual_intensity_var
+    global visual_harmonics_var
 
     import sys
     if "--debug" in sys.argv:
@@ -2111,6 +2222,28 @@ def main():
 
     osc_menu.add_separator()
     osc_menu.add_checkbutton(label="Merge Waves", variable=osc_merge_var, command=set_osc_merge_waves)
+
+    # --- Visual strobe mode ---
+    visual_settings_menu = tk.Menu(settings_menu, tearoff=False)
+    settings_menu.add_cascade(label="Visual", menu=visual_settings_menu)
+    visual_settings_menu.add_command(label="Recalibrate screen",
+                                      command=run_screen_calibration)
+    visual_settings_menu.add_separator()
+    visual_intensity_var = tk.StringVar(value=get_visual_settings()["intensity"])
+    visual_settings_menu.add_radiobutton(
+        label="Intensity: Comfy (default)",
+        variable=visual_intensity_var, value="comoda",
+        command=set_visual_intensity)
+    visual_settings_menu.add_radiobutton(
+        label="Intensity: Bright",
+        variable=visual_intensity_var, value="brillante",
+        command=set_visual_intensity)
+    visual_settings_menu.add_separator()
+    visual_harmonics_var = tk.BooleanVar(
+        value=get_visual_settings()["harmonics_enabled"])
+    visual_settings_menu.add_checkbutton(
+        label="Experimental harmonic mode (advanced)",
+        variable=visual_harmonics_var, command=on_visual_harmonics_toggle)
 
     beat_type_var = tk.StringVar(value="binaural")
 
@@ -2290,6 +2423,34 @@ def main():
 
     stop_button = ttk.Button(bottom_frame, text="Stop", command=stop_audio)
     stop_button.grid(row=0, column=2, sticky="w", padx=20)
+
+    # --- Visual mode (strobe): its own row in the bottom bar ---
+    # No LabelFrame (its title stole the height this row needs) and a
+    # wraplength on the label: long status text widened the window and pushed
+    # the preset column off screen.
+    visual_toggle_button = tb.Button(
+        bottom_frame, text="Visual mode", command=toggle_visual_mode,
+        bootstyle="secondary")
+    visual_toggle_button.grid(row=1, column=0, sticky="e", padx=20, pady=(0, 4))
+
+    visual_status_label = ttk.Label(
+        bottom_frame, text="Visual: -", anchor="center", justify="center",
+        wraplength=640)
+    visual_status_label.grid(row=1, column=1, sticky="ew", pady=(0, 4))
+
+    visual_disclaimer_label = ttk.Label(
+        bottom_frame, text="Not a medical device or treatment.",
+        anchor="e")
+    visual_disclaimer_label.grid(row=1, column=2, sticky="e", padx=20, pady=(0, 4))
+
+    # The gate state is recomputed when rhythm, category or ramp changes
+    beat_type_var.trace_add("write", lambda *a: update_visual_button())
+    ramp_enabled_var.trace_add("write", lambda *a: update_visual_button())
+    for visual_entry in (left_frequency_entry, right_frequency_entry,
+                         start_beat_entry, end_beat_entry,
+                         ramp_minutes_entry):
+        visual_entry.bind("<KeyRelease>", lambda e: update_visual_button())
+    update_visual_button()
 
     update_live_status()
 
