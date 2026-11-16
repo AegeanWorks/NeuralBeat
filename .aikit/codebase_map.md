@@ -7,10 +7,10 @@
 
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `22`
-- **Total Classes**: `61`
-- **Total Top-Level Functions**: `72`
-- **Total Class Methods**: `254`
-- **Total Source Lines**: `6853`
+- **Total Classes**: `63`
+- **Total Top-Level Functions**: `73`
+- **Total Class Methods**: `264`
+- **Total Source Lines**: `7004`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`22` module(s))
@@ -36,7 +36,7 @@
 ---
 
 ### [`SourceCode.py`](SourceCode.py)
-**Size**: `2606` lines (`105357` bytes)
+**Size**: `2669` lines (`107983` bytes)
 
 **Classes:**
 - `class NoiseGenerator` - *Generates blocks of colored noise with state preservation using digital filters.*
@@ -58,6 +58,10 @@
   - Method `.stop()` - *Stops audio gracefully with fade out.*
   - Method `.get_elapsed_time()`
   - Method `.get_last_block()`
+- `class _StreamingWavWriter` - *Incremental float32 stereo WAV writer.*
+  - Method `.__init__(fh, sample_rate, total_frames, channels)`
+  - Method `.write(block)`
+  - Method `.flush_and_sync()`
 
 **Functions:**
 - `def is_combined_beat_label(category)` - *True when the label carries both beat words (combined UI label).*
@@ -94,6 +98,7 @@
 - `def set_osc_merge_waves()` - *Saves the merge waves setting and updates the live plot's static elements.*
 - `def set_osc_colors(palette_name)` - *Sets the oscilloscope color palette and saves to config.*
 - `def toggle_oscilloscope_window()` - *Opens or closes the real-time oscilloscope window.*
+- `def _discard_partial_export_file(filename)` - *Remove a partial export file (cancel / error path).*
 - `def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error, cancel_event)` - *Background thread function for exporting audio to a WAV file.*
 - `def export_audio_file()` - *Initiates the audio export process with UI dialogs.*
 - `def play_audio()` - *Starts audio playback based on current UI settings.*
@@ -385,7 +390,7 @@
 ### [`tests/test_verify_fixes.py`](tests/test_verify_fixes.py)
 > *Regression tests for verify/analyze fixes (export routing, pulse continuity, config).*
 
-**Size**: `215` lines (`9464` bytes)
+**Size**: `303` lines (`13862` bytes)
 
 **Classes:**
 - `class TestExportRouting`
@@ -406,6 +411,14 @@
 - `class TestConfigQuarantine`
   - Method `.test_corrupt_config_is_quarantined()`
   - Method `.test_valid_config_is_not_quarantined()`
+- `class TestStreamingExport`
+  - Method `._cfg()`
+  - Method `._run(out_path, duration)`
+  - Method `._expected_frames(total_frames, fade_len)` - *Reference render: one deterministic generator run plus the tail fade.*
+  - Method `.test_export_produces_f32_wav_matching_reference()`
+  - Method `.test_export_pre_fade_region_matches_reference()`
+  - Method `.test_cancelled_after_generation_removes_no_file_on_success_path()`
+  - Method `.test_writer_uses_fsync_and_discards_partial()`
 
 ---
 

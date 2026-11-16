@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from tkinter import filedialog
 import logging
+import struct
 import threading
 import os
 import subprocess
@@ -15,7 +16,6 @@ from dataclasses import dataclass
 import numpy as np
 import sounddevice as sd
 from scipy import signal
-from scipy.io import wavfile
 import ttkbootstrap as tb
 
 import matplotlib
@@ -1664,8 +1664,47 @@ def toggle_oscilloscope_window():
 # the window; cleared when a new export starts.
 export_cancel_event = threading.Event()
 
+class _StreamingWavWriter:
+    """Incremental float32 stereo WAV writer.
+
+    Wraps an already-open binary file handle and streams blocks to disk with
+    a header sized up front (total frames are known before generation) so
+    export memory is bounded to a single generator block instead of the
+    whole render. The emitted file is a standard RIFF/WAVE IEEE-float file,
+    byte-compatible with scipy.io.wavfile.write.
+    """
+
+    def __init__(self, fh, sample_rate, total_frames, channels=2):
+        bits = 32
+        block_align = channels * (bits // 8)
+        byte_rate = int(sample_rate) * block_align
+        data_bytes = int(total_frames) * block_align
+        self._fh = fh
+        fh.write(struct.pack(
+            "<4sI4s4sIHHIIHH4sI",
+            b"RIFF", 36 + data_bytes, b"WAVE",
+            b"fmt ", 16, 3, channels, int(sample_rate), byte_rate,
+            block_align, bits,
+            b"data", data_bytes,
+        ))
+
+    def write(self, block):
+        self._fh.write(np.ascontiguousarray(block, dtype="<f4").tobytes())
+
+    def flush_and_sync(self):
+        self._fh.flush()
+        os.fsync(self._fh.fileno())
+
+def _discard_partial_export_file(filename):
+    """Remove a partial export file (cancel / error path)."""
+    try:
+        os.unlink(filename)
+    except OSError:
+        logger.debug("Could not remove partial export file", exc_info=True)
+
 def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, progress_label, on_success, on_error, cancel_event=None):
     """Background thread function for exporting audio to a WAV file."""
+    writer = None
     try:
         sample_rate = cfg.sample_rate
         # Clamp to 1s..60min to avoid accidental multi-GB exports; mirrors the
@@ -1680,45 +1719,69 @@ def _run_export_thread(cfg, filename, duration, progress_win, progress_bar, prog
             generator = BinauralGenerator(cfg)
 
         frames_written = 0
-        all_audio = []
-
-        while frames_written < total_frames:
-            # A set event (currently only from on_close) cancels the export:
-            # no file is written and no completion callback fires.
-            if cancel_event is not None and cancel_event.is_set():
-                logger.info("Export cancelled; no file written.")
-                return
-
-            chunk_size = min(block_size, total_frames - frames_written)
-            audio_block = generator.generate_block(chunk_size)
-            all_audio.append(audio_block)
-            frames_written += chunk_size
-
-            percent = (frames_written / total_frames) * 100
-
-            def update_ui(p=percent):
-                try:
-                    if progress_win.winfo_exists():
-                        progress_bar['value'] = p
-                        progress_label.config(text=f"Generating... {int(p)}%")
-                except Exception:
-                    logger.debug("Could not update export progress", exc_info=True)
-
-            root.after(0, update_ui)
-
-        full_audio = np.concatenate(all_audio)
-
-        # Apply fade out to the very end (last 20ms) for clean cut
+        # Fade out the last 20ms (in place, scaled per block) for a clean cut.
         fade_len = int(0.02 * sample_rate)
-        if len(full_audio) > fade_len:
-            ramp = np.linspace(1.0, 0.0, fade_len, dtype=np.float32)
-            full_audio[-fade_len:] *= ramp[:, np.newaxis]
+        fade_start = max(0, total_frames - fade_len)
 
-        wavfile.write(filename, sample_rate, full_audio)
+        # A set event (currently only from on_close) cancels the export:
+        # the partial file is removed and no completion callback fires.
+        if cancel_event is not None and cancel_event.is_set():
+            logger.info("Export cancelled; no file written.")
+            return
 
-        root.after(0, lambda: on_success(filename))
+        with open(filename, "wb") as fh:
+            writer = _StreamingWavWriter(fh, sample_rate, total_frames, channels=2)
+            cancelled = False
+            while frames_written < total_frames:
+                if cancel_event is not None and cancel_event.is_set():
+                    logger.info("Export cancelled; no file written.")
+                    cancelled = True
+                    break
+
+                chunk_size = min(block_size, total_frames - frames_written)
+                audio_block = generator.generate_block(chunk_size)
+
+                end_idx = frames_written + chunk_size
+                if end_idx > fade_start:
+                    if fade_start > frames_written:
+                        writer.write(audio_block[: fade_start - frames_written])
+                    s = max(0, fade_start - frames_written)
+                    pos = np.arange(frames_written + s, end_idx, dtype=np.float64)
+                    ramp = ((total_frames - 1.0 - pos) / max(1, fade_len - 1)).astype(np.float32)
+                    audio_block[s:] *= ramp[:, np.newaxis]
+                    writer.write(audio_block[s:])
+                else:
+                    writer.write(audio_block)
+                frames_written = end_idx
+
+                percent = (frames_written / total_frames) * 100
+
+                def update_ui(p=percent):
+                    try:
+                        if progress_win.winfo_exists():
+                            progress_bar['value'] = p
+                            progress_label.config(text=f"Generating... {int(p)}%")
+                    except Exception:
+                        logger.debug("Could not update export progress", exc_info=True)
+
+                root.after(0, update_ui)
+
+            if cancelled:
+                # Partial file is discarded below, once the handle is closed
+                # (an open file cannot be unlinked on Windows).
+                pass
+            else:
+                writer.flush_and_sync()
+                writer = None
+                root.after(0, lambda: on_success(filename))
+
+        if writer is not None:
+            _discard_partial_export_file(filename)
+            writer = None
 
     except Exception as e:
+        if writer is not None:
+            _discard_partial_export_file(filename)
         root.after(0, lambda: on_error(e))
 
 def export_audio_file():
