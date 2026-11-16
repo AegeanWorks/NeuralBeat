@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "reforge-run8-followups",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1794829314.7137423,
     "owner": "claude:node1",
     "started_by": "unidentified",
@@ -14,20 +14,12 @@
         "from": "unidentified",
         "at": 1794829314.7137423
       }
-    ]
+    ],
+    "completed_at": 1794829351.7857997,
+    "completed_head": "0839b1efbfdfebac36ec8d6c9449f71f3aab4210",
+    "completed_tree": "8da066542698f39b4334c039f59415747ed12ffa"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-8",
-      "phase": "reforge stage 50",
-      "phase_num": 3,
-      "description": "Reforge stage 50: stage 50 host review reviewed; run active; coverage 12/12",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794817845.0904255,
-      "timestamp_str": "2026-11-16 11:30:45",
-      "agent": "unidentified"
-    },
     {
       "task_id": "reforge:run-8",
       "phase": "reforge stage 51",
@@ -264,6 +256,23 @@
       "timestamp_str": "2026-11-16 14:41:54",
       "agent": "claude:node1",
       "continued_from": "unidentified"
+    },
+    {
+      "task_id": "reforge-run8-followups",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'reforge-run8-followups' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794829351.8287246,
+      "timestamp_str": "2026-11-16 14:42:31",
+      "agent": "claude:node1",
+      "head": "0839b1efbfdfebac36ec8d6c9449f71f3aab4210",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }

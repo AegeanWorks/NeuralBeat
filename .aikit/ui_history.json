@@ -237,5 +237,26 @@
     "final_snapshot_entries": 0,
     "surface_digest": "e9842c0721bd159dceec438e18cd441ec919aeab6d6b6a1d738b2f92c1fa960d",
     "baseline_digest": "e9842c0721bd159dceec438e18cd441ec919aeab6d6b6a1d738b2f92c1fa960d"
+  },
+  {
+    "schema": 1,
+    "surface": "app",
+    "mode": "visual",
+    "visual_change": true,
+    "changed_paths": [],
+    "no_visual_reason": "",
+    "no_change_reason": "Dead-code removal only: launcher errorlevel block and identical try/except pairs; no widget, layout or styling change",
+    "baseline_commit": "0839b1efbfdfebac36ec8d6c9449f71f3aab4210",
+    "contract_hash": "68a10fc78336e4c0ac11d6154f2b819baefdbe517a4234a7bb06f0d75ae93885",
+    "started_at": 1794829331.1493924,
+    "finished_at": 1794829339.7404678,
+    "strikes": 0,
+    "reviewer": "Yunus-Emre",
+    "allowed_removals": [],
+    "allowed_tests": [],
+    "final_snapshot_digest": "",
+    "final_snapshot_entries": 0,
+    "surface_digest": "ac80b73e4faacbd743f428a644d78f3f680fe43cf65a8a05036a7f81b61e6201",
+    "baseline_digest": "ac80b73e4faacbd743f428a644d78f3f680fe43cf65a8a05036a7f81b61e6201"
   }
 ]
