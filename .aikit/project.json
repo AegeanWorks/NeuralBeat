@@ -46,5 +46,11 @@
     "aegean-license",
     "commercial-license"
   ],
-  "ui_required": true
+  "ui_required": true,
+  "archived": true,
+  "archived_at": "2026-11-16",
+  "archive_reason": "Feature work completed and delivered: one-click starter, UI overhaul and all Reforge run-8 findings resolved; project retired to the archive",
+  "archive_repo": "AegeanWorks/NeuralBeat",
+  "archive_description": "[ARCHIVED] The Ultimate Neuro-Acoustic Desktop Application",
+  "archive_origin": "projects/NeuralBeat"
 }

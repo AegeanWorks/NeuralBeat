@@ -10,6 +10,8 @@
 
 **The Ultimate Neuro-Acoustic Desktop Application**
 
+> **Archived**: Feature work completed and delivered: one-click starter, UI overhaul and all Reforge run-8 findings resolved; project retired to the archive (archived 2026-11-16). This project is read-only; its GitHub repository is archived.
+
 *A scientifically verified, local-first binaural beat, monaural beat, and isochronic tone generator.*
 
 </div>
