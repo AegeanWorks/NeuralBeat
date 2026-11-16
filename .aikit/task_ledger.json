@@ -1,13 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "neuralbeat:aesthetic-minimal-ui",
+    "task_id": "neuralbeat:starter-exec-bit",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1794779132.9680345,
-    "owner": "antigravity:cd77b8d0",
-    "started_by": "antigravity:cd77b8d0",
+    "updated_at": 1794808155.4098,
+    "owner": "claude:node1",
+    "started_by": "claude:node1",
     "continuations": [],
     "workspaces": [
       {
@@ -15,74 +15,11 @@
         "path": "projects/NeuralBeat"
       }
     ],
-    "completed_at": 1794779145.8471336,
-    "completed_head": "4b0a2c23171fc10da881be481093c65cbcdea203",
-    "completed_tree": "80765e646c6144f864b5f9d37e6ac15946354d82"
+    "completed_at": 1794808155.832846,
+    "completed_head": "a658b73d9f71b8a97b3097d5a1c1581726d06210",
+    "completed_tree": "b4627a2df9a672557b78a7d42440b761a6ffd7de"
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:strobe-adoption",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[3/6] cycle C: run_screen_calibration (2s flip measurement, xrandr fallback, confidence tiers), start_visual_mode (fullscreen strobe, BeatClock, scheduler, instant-exit bindings, start() anchor) - English strings. checklists: passed",
-      "files_affected": [
-        "SourceCode.py"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794772059.6088347,
-      "timestamp_str": "2026-11-15 22:47:39",
-      "agent": "claude:node1",
-      "head": "7ecf8a08a20f24115e0dc263f63c2b7075b2de84",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
-    {
-      "task_id": "neuralbeat:strobe-adoption",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[3/6] cycle D: visual_poll (deadline loop, audio watchdog, lateness abort), close_visual_mode (focus restore), hooks in stop_audio/play_audio/apply_preset/on_close, main(): Visual settings cascade, bottom-bar row with toggle + status + disclaimer, trace_add/KeyRelease bindings. Visual review recorded via pre/post pixel diff. checklists: passed",
-      "files_affected": [
-        "SourceCode.py"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794772603.2027583,
-      "timestamp_str": "2026-11-15 22:56:43",
-      "agent": "claude:node1",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
-    {
-      "task_id": "neuralbeat:strobe-adoption",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/6] tests/test_visual_mode.py restored (10 tests: rate request resolution x5, xrandr probe x2, start/poll regression x2, integer probe) - all green against the real wiring (159 total); run_screen_calibration silent excepts narrowed to tk.TclError with hygiene allows; README: visual.py in tree, strobe feature section + docs; map refreshed. checklists: passed",
-      "files_affected": [
-        "tests/test_visual_mode.py",
-        "SourceCode.py",
-        "README.md"
-      ],
-      "status": "in_progress",
-      "timestamp": 1794772773.5665982,
-      "timestamp_str": "2026-11-15 22:59:33",
-      "agent": "claude:node1",
-      "checklists": "passed",
-      "workspaces": [
-        {
-          "name": "NeuralBeat",
-          "path": "projects/NeuralBeat"
-        }
-      ]
-    },
     {
       "task_id": "neuralbeat:strobe-adoption",
       "phase": "phase 4",
@@ -402,6 +339,64 @@
       "timestamp_str": "2026-11-16 00:45:45",
       "agent": "antigravity:cd77b8d0",
       "head": "4b0a2c23171fc10da881be481093c65cbcdea203",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "neuralbeat:starter-exec-bit",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[1/1] restore POSIX exec bit on start_neuralbeat.sh (git recorded 100644; chmod on Windows does not stick) so ./start_neuralbeat.sh works after a fresh clone on macOS/Linux",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794808135.9132404,
+      "timestamp_str": "2026-11-16 08:48:55",
+      "agent": "claude:node1",
+      "impact_assessment": {
+        "why": "./start_neuralbeat.sh fails with permission denied after fresh clone; launcher is the one-click entry point (PRINCIPLE-011)",
+        "benefits": "fresh clones on macOS/Linux can run the launcher directly",
+        "risks": "none beyond mode bit",
+        "mitigation": "mode-bit only change, no content diff; verified via git ls-files 100755"
+      },
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:starter-exec-bit",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[1/1] mode-bit only; strict 4/4; Post-Flight done",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794808155.4098,
+      "timestamp_str": "2026-11-16 08:49:15",
+      "agent": "claude:node1",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "NeuralBeat",
+          "path": "projects/NeuralBeat"
+        }
+      ]
+    },
+    {
+      "task_id": "neuralbeat:starter-exec-bit",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'neuralbeat:starter-exec-bit' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794808155.8738227,
+      "timestamp_str": "2026-11-16 08:49:15",
+      "agent": "claude:node1",
+      "head": "a658b73d9f71b8a97b3097d5a1c1581726d06210",
       "delivery": {
         "roots": [
           "."
