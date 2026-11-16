@@ -1052,10 +1052,7 @@ def update_visual_button():
     if visual_toggle_button is None or visual_status_label is None:
         return
     if visual_mode_active:
-        try:
-            visual_toggle_button.config(text="Close visual mode")
-        except Exception:
-            visual_toggle_button.config(text="Close visual mode")
+        visual_toggle_button.config(text="Close visual mode")
         visual_status_label.config(
             text=visual_active_status or
             "Visual mode active - exit with any key")
@@ -1063,18 +1060,12 @@ def update_visual_button():
     try:
         req, cap = compute_visual_capability()
     except (ValueError, TypeError):
-        try:
-            visual_toggle_button.config(text="Visual mode")
-        except Exception:
-            visual_toggle_button.config(text="Visual mode")
+        visual_toggle_button.config(text="Visual mode")
         visual_status_label.config(text="Visual mode: enter a valid rate")
         return
     if not req["rate_hz"]:
         # Fresh 432/432 entries: no beat yet - guide instead of gate-error.
-        try:
-            visual_toggle_button.config(text="Visual mode")
-        except Exception:
-            visual_toggle_button.config(text="Visual mode")
+        visual_toggle_button.config(text="Visual mode")
         visual_status_label.config(
             text="Visual: enter a beat frequency to enable the strobe")
         return
@@ -1086,10 +1077,7 @@ def update_visual_button():
         note = f"{visual_last_reason} - {note}"
         visual_last_reason = None
     state_txt = cap.state.replace("_", " ")
-    try:
-        visual_toggle_button.config(text=f"Visual mode - {state_txt}")
-    except Exception:
-        visual_toggle_button.config(text=f"Visual mode - {state_txt}")
+    visual_toggle_button.config(text=f"Visual mode - {state_txt}")
     visual_status_label.config(text=f"Visual: {label} - {note}")
 
 

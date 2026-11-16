@@ -47,13 +47,7 @@ if errorlevel 1 (
 )
 
 :run
+rem `start` returns before the app runs and a windowed launch exposes no
+rem errorlevel, so a failed start cannot be detected here.
 start "NeuralBeat" /d "%HERE%" "%VENV_PYW%" SourceCode.py
-if errorlevel 1 (
-  echo.
-  echo Why: NeuralBeat did not start from the launcher.
-  echo Fix: run this in a terminal to see the underlying error:
-  echo      "%VENV_PY%" SourceCode.py
-  pause
-  exit /b 1
-)
 exit /b 0

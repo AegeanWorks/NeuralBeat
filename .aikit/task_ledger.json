@@ -1,55 +1,22 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "reforge-run8-fixes",
+    "task_id": "reforge-run8-followups",
     "last_phase": "in_progress",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1794820594.8013308,
+    "updated_at": 1794829314.7137423,
     "owner": "claude:node1",
-    "started_by": "claude:node1",
-    "continuations": []
+    "started_by": "unidentified",
+    "continuations": [
+      {
+        "agent": "claude:node1",
+        "from": "unidentified",
+        "at": 1794829314.7137423
+      }
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "neuralbeat:starter-exec-bit",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'neuralbeat:starter-exec-bit' completed successfully.",
-      "status": "completed",
-      "timestamp": 1794808155.8738227,
-      "timestamp_str": "2026-11-16 08:49:15",
-      "agent": "claude:node1",
-      "head": "a658b73d9f71b8a97b3097d5a1c1581726d06210",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "reforge:run-8",
-      "phase": "reforge stage 49",
-      "phase_num": 3,
-      "description": "Reforge stage 49: stage 49 host review reviewed; run active; coverage 6/6",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794817757.3665767,
-      "timestamp_str": "2026-11-16 11:29:17",
-      "agent": "unidentified"
-    },
-    {
-      "task_id": "reforge:run-8",
-      "phase": "reforge stage 50",
-      "phase_num": 3,
-      "description": "Reforge stage 50: window 150, 3 commit(s), 2 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1794817767.898704,
-      "timestamp_str": "2026-11-16 11:29:27",
-      "agent": "unidentified"
-    },
     {
       "task_id": "reforge:run-8",
       "phase": "reforge stage 50",
@@ -251,6 +218,52 @@
       "timestamp": 1794820594.8013308,
       "timestamp_str": "2026-11-16 12:16:34",
       "agent": "claude:node1"
+    },
+    {
+      "task_id": "reforge-run8-fixes",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'reforge-run8-fixes' completed successfully.",
+      "status": "completed",
+      "timestamp": 1794821410.3521414,
+      "timestamp_str": "2026-11-16 12:30:10",
+      "agent": "claude:node1",
+      "head": "2c84b965a09cf952edd38f0e250557ffcb4c1de7",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "reforge-run8-followups",
+      "phase": "in_progress",
+      "phase_num": 2,
+      "description": "[2/2] Remove dead code from Reforge run-8: dead errorlevel check after start in start_neuralbeat.bat; identical try/except pairs around visual_toggle_button.config in update_visual_button",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794829255.7115796,
+      "timestamp_str": "2026-11-16 14:40:55",
+      "agent": "unidentified",
+      "impact_assessment": {
+        "why": "Covers highlight two dead-code sites that mislead readers and can mask real errors",
+        "benefits": "Launcher no longer pretends to detect a failure it cannot see; button updates stop wrapping real failures in a second identical call",
+        "risks": "contract: none (no signature or behavior change); dependency: none; concurrency: none; state: none",
+        "mitigation": "Behavior-identical deletion; update_visual_button covered by existing test_visual_mode.py suite; full pytest plus strict check before commit"
+      }
+    },
+    {
+      "task_id": "reforge-run8-followups",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "Phase 4 verification: 173/173 tests pass; dead errorlevel check and 4 identical try/except pairs removed; checklists: passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1794829314.7137423,
+      "timestamp_str": "2026-11-16 14:41:54",
+      "agent": "claude:node1",
+      "continued_from": "unidentified"
     }
   ]
 }
